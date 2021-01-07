@@ -2,8 +2,8 @@ from pymodaq.daq_move.utility_classes import DAQ_Move_base
 from pymodaq.daq_move.utility_classes import comon_parameters
 from pymodaq.daq_utils.daq_utils import ThreadCommand
 from easydict import EasyDict as edict
-from pymodaq_plugins.hardware.smaract.smaract import SmarAct
-from pymodaq_plugins.hardware.smaract.smaract import get_controller_locators
+from ..hardware.smaract.smaract import SmarAct
+from ..hardware.smaract.smaract import get_controller_locators
 
 class DAQ_Move_SmarActMCS(DAQ_Move_base):
     """
