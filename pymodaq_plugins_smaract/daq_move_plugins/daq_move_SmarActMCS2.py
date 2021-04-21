@@ -203,37 +203,42 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
 
         Parameters
         ----------
-        position: (float) value of the absolute target positioning
+        position: (float) value of the absolute target positioning in
+            micrometers
         """
-        position = self.check_bound(position)  # if user checked bounds,
-        # the defined bounds are applied here
-        position = self.set_position_with_scaling(position)  # apply scaling if
-        # the user specified one
+        # if the user checked bounds, they are applied here
+        position = self.check_bound(position)
+        # apply scaling if the user specified one
+        position = self.set_position_with_scaling(position)
+        self.target_position = position  # in micrometers
 
-        position = int(position*1e6)  # convert position in picometers
+        # convert position in picometers
+        position = int(position*1e6)
         self.controller.absolute_move(
             self.settings.child('multiaxes', 'axis').value(), position)
 
-        self.target_position = position
-        self.poll_moving()  # start a loop to poll the current actuator value
-        # and compare it with target position
+        # start a loop to poll the current actuator value and compare it with
+        # target position
+        self.poll_moving()
 
-    def move_Rel(self, position):
-        """ Move the actuator to the relative target actuator value defined by
-        position
+    def move_Rel(self, relative_move):
+        """ Move the actuator to the relative target value defined by
+        relative_move
 
         Parameters
         ----------
-        position: (float) value of the relative distance to travel in
+        relative_move: (float) value of the relative distance to travel in
             micrometers
         """
-        position = (self.check_bound(self.current_position+ position)
-                    - self.current_position)
-        self.target_position = position + self.current_position
+        absolute_position = self.check_bound(self.current_position
+                                             + relative_move)
+        self.target_position = absolute_position  # in micrometers
 
-        position = int(position*1e6)  # convert position in picometers
+        # convert relative_move in picometers
+        relative_move = int(relative_move*1e6)
         self.controller.relative_move(
-            self.settings.child('multiaxes', 'axis').value(), position)
+            self.settings.child('multiaxes', 'axis').value(),
+            relative_move)
 
         self.poll_moving()
 
