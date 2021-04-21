@@ -15,6 +15,9 @@ from ..hardware.smaract.smaract_MCS2_wrapper import get_controller_locators
     The SmarAct MCS2 installer should be executed for this plugin to work.
     We suppose that the configuration of the controller and the positioners
     (sensor type…) has been done via the SmarAct MCS2ServiceTool software.
+    
+    If the controller is not switched on, the plugin will not be suggested in
+    the list in the GUI of the daq_move.
 
     It has been tested on Windows 10, with SLC positioner type with enabled
     sensors.
@@ -99,8 +102,8 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         position = self.controller.get_position(
-            self.settings.child('multiaxes', 'axis').value()
-        )
+            self.settings.child('multiaxes', 'axis').value())
+
         position = float(position) / 1e6  # the position given by the
         # controller is in picometers, we convert in micrometers
         position = self.get_position_with_scaling(position)  # convert position
@@ -202,7 +205,6 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         ----------
         position: (float) value of the absolute target positioning
         """
-
         position = self.check_bound(position)  # if user checked bounds,
         # the defined bounds are applied here
         position = self.set_position_with_scaling(position)  # apply scaling if
@@ -215,7 +217,6 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         self.target_position = position
         self.poll_moving()  # start a loop to poll the current actuator value
         # and compare it with target position
-        print(self.current_position)
 
     def move_Rel(self, position):
         """ Move the actuator to the relative target actuator value defined by

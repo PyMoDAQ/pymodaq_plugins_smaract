@@ -149,7 +149,8 @@ class SmarActMCS2Wrapper:
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
             0x0305001D,
-            ctypes.byref(position)
+            ctypes.byref(position),
+            0
         )
 
         if status != 0:
