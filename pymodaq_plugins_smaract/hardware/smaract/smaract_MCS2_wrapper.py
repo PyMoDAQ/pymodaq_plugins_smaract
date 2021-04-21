@@ -4,16 +4,20 @@ import ctypes
 import os
 import re
 
-"""The API documentation is in SmarAct MCS2 Programmers Guide.
+"""The API documentation is in SmarAct MCS2 Programmers Guide, which should be
+   in the same folder as this file.
     
     Prerequisites
     -------------
     We suppose that the configuration of the channels of the controller (sensor
-type etc) has been done via the SmarAct MCS Configuration software.
-    We suppose to have some linear positionners (SLC type).
+type etc) has been done via the SmarAct MCS2ServiceTool software.
+    We suppose to have some linear positionners (SLC type) with sensors
+(S option).
 
-    Tested with SLC-1740-S (closed loop with nanometer precision sensor)
-connected to a MCS2 controller.
+    Tested with:
+    - positioner: SLC24180s
+    - sensor type: MCS2-S-0001
+    - controller: MCS2 in closed loop, positioner type = SL...S1SS (300)
 """
 
 # The SmarActCTL.dll should also be in the current folder, but also
