@@ -6,6 +6,5 @@ description = 'Set of PyMoDAQ plugins for linear actuators from Smaract' \
 author = 'David Bresteau'
 author_email = 'david.bresteau@cea.fr'
 
-#packages required for your plugin:
+# packages required for your plugin:
 packages_required = []
-##

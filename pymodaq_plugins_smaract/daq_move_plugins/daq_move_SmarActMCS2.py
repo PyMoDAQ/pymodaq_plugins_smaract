@@ -15,7 +15,7 @@ from ..hardware.smaract.smaract_MCS2_wrapper import get_controller_locators
     The SmarAct MCS2 installer should be executed for this plugin to work.
     We suppose that the configuration of the controller and the positioners
     (sensor type…) has been done via the SmarAct MCS2ServiceTool software.
-    
+
     If the controller is not switched on, the plugin will not be suggested in
     the list in the GUI of the daq_move.
 
@@ -86,7 +86,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         Parameters
         ----------
         parent (caller object of this plugin): see DAQ_Move_main.DAQ_Move_stage
-        params_state (list of dicts): saved state of the plugins parameters list
+        params_state (list of dicts): saved state of the plugin parameters list
         """
         super().__init__(parent, params_state)
         self.controller = None
@@ -256,4 +256,3 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         self.emit_status(ThreadCommand('Update_Status',
                                        ['The positioner has been stopped']))
         self.move_done()  # to let the interface know the actuator stopped
-
