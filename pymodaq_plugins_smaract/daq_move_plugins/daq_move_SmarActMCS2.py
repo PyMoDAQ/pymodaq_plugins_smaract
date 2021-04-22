@@ -86,8 +86,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         Parameters
         ----------
         parent (caller object of this plugin): see DAQ_Move_main.DAQ_Move_stage
-        params_state (list of dicts): saved state of the plugins parameters
-            list
+        params_state (list of dicts): saved state of the plugins parameters list
         """
         super().__init__(parent, params_state)
         self.controller = None
@@ -166,7 +165,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
             if self.settings.child('multiaxes',
                                    'ismultiaxes').value() \
                     and self.settings.child('multiaxes',
-                                   'multi_status').value() == "Slave":
+                                            'multi_status').value() == "Slave":
                 if controller is None:
                     raise Exception('No controller has been defined externally'
                                     ' while this axe is a slave one')
