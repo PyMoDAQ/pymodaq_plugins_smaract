@@ -1,5 +1,5 @@
 pymodaq_plugins_smaract (Smaract)
-#################################
+
 
 .. image:: https://img.shields.io/pypi/v/pymodaq_plugins_smaract.svg
    :target: https://pypi.org/project/pymodaq_plugins_smaract/
@@ -15,14 +15,12 @@ pymodaq_plugins_smaract (Smaract)
 PyMoDAQ plugin for Actuators from Smaract (MCS_controller, ...)
 
 
+Documentation: http://pymodaq.cnrs.fr/
+
 Authors
 =======
 
-* David Bresteau
-
-Contributors
-============
-
+* David Bresteau (david.bresteau@cea.fr)
 
 
 
@@ -33,4 +31,16 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **SmaractMCS**: Actuators driven using the MCS controller and its library
+* **SLC linear stages with sensor (S option) with MCS controller**
+* **SLC linear stages with sensor (S option) with MCS2 controller**
+
+
+System requirements
+===================
+
+Operating system: Windows 7 or 10
+
+Python: >=3.7
+
+PyMoDAQ: >=3.1.2
+
