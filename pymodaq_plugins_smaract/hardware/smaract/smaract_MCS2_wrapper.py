@@ -145,7 +145,7 @@ class SmarActMCS2Wrapper:
         position.value: signed int
         """
 
-        position = ctypes.c_long()
+        position = ctypes.c_longlong()
 
         # The code 0x0305001D corresponds to SA_CTL_PKEY_POSITION has been
         # found in page 155 of the programmers guide
@@ -220,7 +220,7 @@ class SmarActMCS2Wrapper:
         status = smaract_dll.SA_CTL_Move(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
-            ctypes.c_long(relative_move_value),
+            ctypes.c_longlong(relative_move_value),
             0
         )
 
@@ -262,7 +262,7 @@ class SmarActMCS2Wrapper:
         status = smaract_dll.SA_CTL_Move(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
-            ctypes.c_long(absolute_move_value),
+            ctypes.c_longlong(absolute_move_value),
             0
         )
 
