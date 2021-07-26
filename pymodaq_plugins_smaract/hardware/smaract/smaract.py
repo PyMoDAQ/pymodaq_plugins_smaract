@@ -116,7 +116,7 @@ class SmarAct(object):
         )
 
         if status != 0:
-            raise Exception('SmarAct SA_CloseSystem failed')
+            raise Exception(f'SmarAct SA_CloseSystem failed with error {status}')
 
     def get_position(self, channel_index):
         """
