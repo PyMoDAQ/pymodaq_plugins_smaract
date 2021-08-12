@@ -1,4 +1,5 @@
 pymodaq_plugins_smaract (Smaract)
+#################################
 
 
 .. image:: https://img.shields.io/pypi/v/pymodaq_plugins_smaract.svg
@@ -12,7 +13,7 @@ pymodaq_plugins_smaract (Smaract)
 .. image:: https://github.com/CEMES-CNRS/pymodaq_plugins_smaract/workflows/Upload%20Python%20Package/badge.svg
     :target: https://github.com/CEMES-CNRS/pymodaq_plugins_smaract
 
-PyMoDAQ plugin for Actuators from Smaract (MCS_controller, ...)
+PyMoDAQ plugin for actuators from Smaract (MCS_controller, ...)
 
 
 Documentation: http://pymodaq.cnrs.fr/
