@@ -21,7 +21,9 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
     stage_names = []
 
     params = [
-        {'title': 'Device', 'name': 'device', 'type': 'list', 'values': psets_str},
+                 {'title': 'Device', 'name': 'device', 'type': 'list', 'values': psets_str},
+                 {'title': 'Frequency (Hz)', 'name': 'frequency', 'type': 'int', 'value': 450},
+                 {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'int', 'value': 100},
         ##########################################################
         # the ones below should ALWAYS be present!!!
         {"title": "MultiAxes:", "name": "multiaxes", "type": "group", "visible": is_multiaxes, "children": [
@@ -38,6 +40,12 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
 
         self.controller = None
         self.settings.child("epsilon").setValue(0.002)
+
+    def commit_settings(self, param):
+        if param.name() == 'amplitude':
+            self.controller.amplitude = Q_(param.value(), units='V')
+        elif param.name() == 'frequency':
+            self.controller.frequency = Q_(param.value(), 'Hz')
 
     def ini_stage(self, controller=None):
         """Initialize the controller and stages (axes) with given parameters.
@@ -75,6 +83,10 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
                 index = self.settings.child('device').opts['limits'].index(self.settings.child('device').value())
                 self.controller = instrument(psets[index])
                 self.settings.child('units').setValue(self.controller.units)
+                self.settings.child('amplitude').setOpts(limits=self.controller.amplitude_limits.m_as('V'))
+                self.settings.child('frequency').setOpts(limits=self.controller.frequency_limits.m_as('Hz'))
+                self.settings.child('amplitude').setValue(self.controller.amplitude.m_as('V'))
+                self.settings.child('frequency').setValue(self.controller.frequency.m_as('Hz'))
 
             self.status.controller = self.controller
             self.status.initialized = True

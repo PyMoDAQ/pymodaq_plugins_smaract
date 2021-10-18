@@ -110,5 +110,6 @@ venv.bak/
 # pycharm
 .idea/
 .idea/*
-pymodaq_plugins_smaract/daq_move_plugins/lextab.py
-pymodaq_plugins_smaract/daq_move_plugins/yacctab.py
+
+*lextab.py
+*yacctab.py

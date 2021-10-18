@@ -7,4 +7,4 @@ author = 'David Bresteau'
 author_email = 'david.bresteau@cea.fr'
 
 # packages required for your plugin:
-packages_required = []
+packages_required = ['instrumental-lib']
