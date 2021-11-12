@@ -54,7 +54,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
                       'readonly': True},
                      {'title': 'Controller locator',
                       'name': 'controller_locator', 'type': 'list',
-                      'values': controller_locators},
+                      'limits': controller_locators},
                   ]},
                  # parameters not specific to the plugin ######################
                  {'title': 'MultiAxes:',
@@ -71,11 +71,11 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
                       'name': 'multi_status',
                       'type': 'list',
                       'value': 'Master',
-                      'values': ['Master', 'Slave']},
+                      'limits': ['Master', 'Slave']},
                      {'title': 'Axis:',
                       'name': 'axis',
                       'type': 'list',
-                      'values': stage_names},
+                      'limits': stage_names},
                   ]}
                  ##############################################################
              ] + comon_parameters

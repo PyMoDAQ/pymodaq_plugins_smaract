@@ -21,7 +21,7 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
     stage_names = []
 
     params = [
-                 {'title': 'Device', 'name': 'device', 'type': 'list', 'values': psets_str},
+                 {'title': 'Device', 'name': 'device', 'type': 'list', 'limits': psets_str},
                  {'title': 'Frequency (Hz)', 'name': 'frequency', 'type': 'int', 'value': 450},
                  {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'int', 'value': 100},
         ##########################################################
@@ -29,8 +29,8 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         {"title": "MultiAxes:", "name": "multiaxes", "type": "group", "visible": is_multiaxes, "children": [
             {"title": "is Multiaxes:", "name": "ismultiaxes", "type": "bool", "value": is_multiaxes},
             {"title": "Status:", "name": "multi_status", "type": "list", "value": "Master",
-             "values": ["Master", "Slave"],},
-            {"title": "Axis:", "name": "axis", "type": "list", "values": stage_names},
+             "limits": ["Master", "Slave"],},
+            {"title": "Axis:", "name": "axis", "type": "list", "limits": stage_names},
             ],},
     ] + comon_parameters
     ##########################################################
