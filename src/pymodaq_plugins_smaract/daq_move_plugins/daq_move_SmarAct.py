@@ -6,7 +6,8 @@ from instrumental import instrument, Q_, list_instruments
 
 psets = list_instruments(module='motion._smaract')
 
-psets_str = [f"Dev. Id{pset['device_id']} channel {pset['channel_index']}" for pset in psets]
+psets_str = [f"Dev. Id{pset['id']} channel {pset['index']}" for pset in psets]
+
 
 
 class DAQ_Move_SmarAct(DAQ_Move_base):
@@ -25,6 +26,8 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
                  {'title': 'Device', 'name': 'device', 'type': 'list', 'limits': psets_str},
                  {'title': 'Frequency (Hz)', 'name': 'frequency', 'type': 'int', 'value': 450},
                  {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'int', 'value': 100},
+                 {'title': 'Max Frequency (Hz)', 'name': 'maxfreq', 'type': 'int', 'value': 18500},
+
         ##########################################################
         # the ones below should ALWAYS be present!!!
         {"title": "MultiAxes:", "name": "multiaxes", "type": "group", "visible": is_multiaxes, "children": [
@@ -47,6 +50,10 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
             self.controller.amplitude = Q_(param.value(), units='V')
         elif param.name() == 'frequency':
             self.controller.frequency = Q_(param.value(), 'Hz')
+
+        elif param.name() == 'maxfreq':
+            self.controller.max_frequency = Q_(param.value(), 'Hz')
+            self.settings.child('maxfreq').setValue(self.controller.max_frequency.m_as('Hz'))
 
     def ini_stage(self, controller=None):
         """Initialize the controller and stages (axes) with given parameters.
@@ -88,6 +95,7 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
                 self.settings.child('frequency').setOpts(limits=self.controller.frequency_limits.m_as('Hz'))
                 self.settings.child('amplitude').setValue(self.controller.amplitude.m_as('V'))
                 self.settings.child('frequency').setValue(self.controller.frequency.m_as('Hz'))
+                self.settings.child('maxfreq').setValue(self.controller.max_frequency.m_as('Hz'))
 
             self.status.controller = self.controller
             self.status.initialized = True
@@ -118,7 +126,9 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         position = self.controller.check_position().magnitude
         # convert position if scaling options have been used, mandatory here
         position = self.get_position_with_scaling(position)
+        #position = self.target_position
         self.current_position = position
+
         self.emit_status(ThreadCommand("check_position", [position]))
 
         return position
@@ -138,8 +148,8 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         # has been activated by user
         position = self.set_position_with_scaling(position)
 
-        self.controller.move_to(position, 'abs')
-        self.poll_moving()
+        self.controller.move_to(Q_(position, self.settings['units']), 'abs')
+
 
     def move_Rel(self, position):
         """Move to a relative position
@@ -152,8 +162,8 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         self.target_position = position + self.current_position
         position = self.set_position_relative_with_scaling(position)
 
-        self.controller.move_to(position, 'rel')
-        self.poll_moving()
+        self.controller.move_to(Q_(position, self.settings['units']), 'rel')
+
 
     def move_Home(self):
         """Move to home and reset position to zero.
