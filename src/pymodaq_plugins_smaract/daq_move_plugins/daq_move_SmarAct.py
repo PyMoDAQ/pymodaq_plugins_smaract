@@ -8,6 +8,7 @@ psets = list_instruments(module='motion._smaract')
 
 psets_str = [f"Dev. Id{pset['device_id']} channel {pset['channel_index']}" for pset in psets]
 
+
 class DAQ_Move_SmarAct(DAQ_Move_base):
     """
 
