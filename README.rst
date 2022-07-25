@@ -24,14 +24,6 @@ Authors
 * David Bresteau (david.bresteau@cea.fr)
 * Sebastien J. Weber (sebastien.weber@cnrs.fr)
 
-.. if needed use this field
-
-    Contributors
-    ============
-
-    * First Contributor
-    * Other Contributors
-
 Instruments
 ===========
 Below is the list of instruments included in this plugin
