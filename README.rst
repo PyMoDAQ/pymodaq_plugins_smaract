@@ -22,8 +22,15 @@ Authors
 =======
 
 * David Bresteau (david.bresteau@cea.fr)
+* Sebastien J. Weber (sebastien.weber@cnrs.fr)
 
+.. if needed use this field
 
+    Contributors
+    ============
+
+    * First Contributor
+    * Other Contributors
 
 Instruments
 ===========
@@ -32,8 +39,9 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **SLC linear stages with sensor (S option) with MCS controller**
-* **SLC linear stages with sensor (S option) with MCS2 controller**
+* **SmaractMCS** SLC linear stages with sensor (S option) with MCS controller
+* **SmaractMCS2** SLC linear stages with sensor (S option) with MCS2 controller
+* **Smaract** SLC linear or angular stages with or without sensors using the Instrumental-lib package
 
 
 System requirements
