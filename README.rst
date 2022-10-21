@@ -10,8 +10,8 @@ pymodaq_plugins_smaract (Smaract)
    :target: https://pymodaq.readthedocs.io/en/stable/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://github.com/CEMES-CNRS/pymodaq_plugins_smaract/workflows/Upload%20Python%20Package/badge.svg
-    :target: https://github.com/CEMES-CNRS/pymodaq_plugins_smaract
+.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_smaract/workflows/Upload%20Python%20Package/badge.svg
+    :target: https://github.com/PyMoDAQ/pymodaq_plugins_smaract
 
 PyMoDAQ plugin for actuators from Smaract (MCS_controller, ...)
 
