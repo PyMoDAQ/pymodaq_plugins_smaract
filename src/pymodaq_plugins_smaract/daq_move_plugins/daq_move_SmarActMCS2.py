@@ -149,7 +149,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         value = int(value * 1e6)
         self.controller.absolute_move(
             self.settings.child('multiaxes', 'axis').value(), value)
-        self.emit_status(ThreadCommand('Update_Status', [f'Moving to {value}']))
+        self.emit_status(ThreadCommand('Update_Status', [f'Moving to {self.target_value}']))
 
     def move_rel(self, value):
         """ Move the actuator to the relative target actuator value defined by value
