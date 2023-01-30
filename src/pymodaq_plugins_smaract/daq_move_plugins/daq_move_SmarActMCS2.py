@@ -35,7 +35,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
     is_multiaxes = True  # we suppose a have a MCS2 controller with a sensor
     # module for 3 channels (stages).
 
-    axes_names = ['0', '1', '2']  # be careful that the channel index starts at 0
+    axes_names = [0, 1, 2]  # be careful that the channel index starts at 0
     # and not at 1 has is done in MCS2ServiceTool
 
     # bounds corresponding to the SLC-24180. Will be used at default if user doesn't provide other ones.
