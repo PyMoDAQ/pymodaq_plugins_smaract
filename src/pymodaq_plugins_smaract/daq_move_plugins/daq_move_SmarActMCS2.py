@@ -22,7 +22,6 @@ config = Config()
     sensors.
 """
 
-
 class DAQ_Move_SmarActMCS2(DAQ_Move_base):
     """
         =============== ==============
@@ -44,6 +43,8 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
 
     offset = 0  # µm
 
+    _epsilon = 0.005 # µm   precision tolerance for movement
+
     params = [
                  {'title': 'group parameter:',
                   'name': 'group_parameter',
@@ -58,7 +59,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
                       'name': 'controller_locator', 'type': 'list',
                       'limits': controller_locators},
                   ]}
-                ] + comon_parameters_fun(is_multiaxes, axes_names)
+                ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
 
     def ini_attributes(self):
         self.controller: SmarActMCS2Wrapper = None
@@ -111,12 +112,6 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
                             new_controller=SmarActMCS2Wrapper())
 
         # min and max bounds will depend on which positionner is plugged.
-        # In case the user hasn't specified different values in the preset,
-        # we add default values for convenience
-        if self.settings.child('epsilon').value() == config('actuator', 'epsilon_default'):
-            self.settings.child('epsilon').setValue(0.005)  # this means that we
-            # tolerate an error of 5 nanometers on the target position
-
         self.settings.child('bounds', 'is_bounds').setValue(True)
         if self.settings.child('bounds', 'min_bound').value() == 0:
             self.settings.child('bounds', 'min_bound').setValue(self.min_bound)
