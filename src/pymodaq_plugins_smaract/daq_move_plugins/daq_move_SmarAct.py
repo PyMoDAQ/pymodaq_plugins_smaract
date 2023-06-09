@@ -1,8 +1,11 @@
+from typing import Union
+
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
 from pymodaq.utils.daq_utils import ThreadCommand
 from easydict import EasyDict as edict
-from instrumental import instrument, Q_, list_instruments
-from instrumental.drivers.motion._smaract.scu import SCULinear
+from instrumental import instrument, list_instruments
+from instrumental.drivers.motion._smaract.scu import SCU, SCULinear, SCURotation, Q_
+
 
 psets = list_instruments(module='motion._smaract')
 psets_str = [f"Dev. Id{pset['id']} channel {pset['index']}" for pset in psets]
@@ -28,7 +31,7 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
     ##########################################################
 
     def ini_attributes(self):
-        self.controller: SCULinear = None
+        self.controller: Union[SCU, SCULinear, SCURotation] = None
         self.settings.child("epsilon").setValue(0.002)
 
     def commit_settings(self, param):
@@ -53,7 +56,8 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         self.settings.child('frequency').setOpts(limits=list(self.controller.frequency_limits.m_as('Hz')))
         self.settings.child('amplitude').setValue(self.controller.amplitude.m_as('V'))
         self.settings.child('frequency').setValue(self.controller.frequency.m_as('Hz'))
-        self.settings.child('maxfreq').setValue(self.controller.max_frequency.m_as('Hz'))
+        if not isinstance(self.controller, SCU):
+            self.settings.child('maxfreq').setValue(self.controller.max_frequency.m_as('Hz'))
 
         info = ''
         initialized = True
@@ -117,7 +121,7 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         """Move to home and reset position to zero.
         """
         self.controller.move_home()
-        self.check_position()
+        self.get_actuator_value()
 
     def stop_motion(self):
         """
