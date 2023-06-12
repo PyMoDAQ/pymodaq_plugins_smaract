@@ -131,4 +131,4 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
 
 
 if __name__ == "__main__":
-    main(__file__)
+    main(__file__, init=False)
