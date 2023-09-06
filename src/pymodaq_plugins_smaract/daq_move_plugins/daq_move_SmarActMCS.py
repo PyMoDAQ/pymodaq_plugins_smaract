@@ -24,7 +24,7 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
 
     is_multiaxes = True
     # we suppose to have a MCS controller with 3 channels (like the MCS-3D).
-    stage_names = [0, 1, 2]
+    axes_names= {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2}
     # bounds corresponding to the SLC-24180
     min_bound = -61500  # µm
     max_bound = +61500  # µm
@@ -51,7 +51,7 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
                 },
             ],
         },
-    ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
+    ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
     ##########################################################
 
     def ini_attributes(self):
