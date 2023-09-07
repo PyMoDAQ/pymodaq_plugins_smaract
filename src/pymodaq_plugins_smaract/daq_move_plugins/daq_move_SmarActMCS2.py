@@ -1,9 +1,10 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
-from pymodaq.daq_utils.parameter import Parameter
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+from pymodaq.utils.parameter import Parameter
 from ..hardware.smaract.smaract_MCS2_wrapper import SmarActMCS2Wrapper
 from ..hardware.smaract.smaract_MCS2_wrapper import get_controller_locators
-from pymodaq.daq_utils.config import Config
+from pymodaq.utils.config import Config
+
 config = Config()
 
 """This plugin handles SmarAct MCS2 controller with LINEAR positioners with the
@@ -119,14 +120,11 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         if self.settings.child('bounds', 'max_bound').value() == 1:
             self.settings.child('bounds', 'max_bound').setValue(self.max_bound)
 
-        try:
+        if self.settings['multiaxes', 'multi_status'] == "Master":
             self.controller.init_communication(
                 self.settings.child('group_parameter',
                                     'controller_locator').value())
-            initialized = True
-        except:
-            initialized = False
-
+        initialized = True
         info = "Smaract stage initialized"
         return info, initialized
 
@@ -142,8 +140,7 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
         value = int(value * 1e6)
-        self.controller.absolute_move(
-            self.settings.child('multiaxes', 'axis').value(), value)
+        self.controller.absolute_move(self.settings['multiaxes', 'axis'], value)
         self.emit_status(ThreadCommand('Update_Status', [f'Moving to {self.target_value}']))
 
     def move_rel(self, value):
@@ -160,25 +157,21 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         # convert relative_move in picometers
         relative_move = int(relative_move*1e6)
 
-        self.controller.relative_move(
-            self.settings.child('multiaxes', 'axis').value(),
-            relative_move)
+        self.controller.relative_move(self.settings['multiaxes', 'axis'], relative_move)
         self.emit_status(ThreadCommand('Update_Status', [f'Moving to {self.target_value}']))
 
     def move_home(self):
         """Move to the physical reference and reset position to 0
         """
-        self.controller.find_reference(
-            self.settings.child('multiaxes', 'axis').value())
+        self.controller.find_reference(self.settings['multiaxes', 'axis'])
         self.emit_status(ThreadCommand('Update_Status',
                                        ['The positioner has been referenced']))
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
-        self.controller.stop(self.settings.child('multiaxes', 'axis').value())
-        self.emit_status(ThreadCommand('Update_Status',
-                                       ['The positioner has been stopped']))
+        self.controller.stop(self.settings['multiaxes', 'axis'])
+        self.emit_status(ThreadCommand('Update_Status', ['The positioner has been stopped']))
 
 
 if __name__ == '__main__':
-    main(__file__)
+    main(__file__, init=True)
