@@ -15,15 +15,15 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
     been done via the SmarAct MCS Configuration software.
     Tested with one SLC-1740-S (closed loop with nanometer precision sensor)
     connected via a MCS-3S-EP-SDS15-TAB (sensor module) to a MCS-3D (or MCS-3C)
-    controller on Windows 7.
+    controller on Windows 10.
     """
     _controller_units = "µm"
-    _epsilon = 0.002
+    _epsilon = 0.005
     # find controller locators
     controller_locators = get_controller_locators()
 
     is_multiaxes = True
-    # we suppose to have a MCS controller with 3 channels (like the MCS-3D).
+    # we suppose to have a MCS controller (first generation) with 3 channels (like the MCS-3D).
     axes_names= {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2}
     # bounds corresponding to the SLC-24180
     min_bound = -61500  # µm
@@ -52,7 +52,6 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
             ],
         },
     ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
-    ##########################################################
 
     def ini_attributes(self):
         self.controller: SmarAct = None
@@ -83,13 +82,13 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
         self.settings.child("bounds", "max_bound").setValue(self.max_bound)
         self.settings.child("scaling", "use_scaling").setValue(True)
         self.settings.child("scaling", "offset").setValue(self.offset)
-        info = ''
+        info = 'SmarAct stage initialized'
         initialized = True
 
         return info, initialized
 
     def close(self):
-        """Close the communication with the SmarAct controller.
+        """Close the communication with the MCS controller.
         """
         self.controller.close_communication()
         self.controller = None
@@ -110,7 +109,6 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
         # convert position if scaling options have been used, mandatory here
         position = self.get_position_with_scaling(position)
         self.current_position = position
-        self.emit_status(ThreadCommand("check_position", [position]))
 
         return position
 
