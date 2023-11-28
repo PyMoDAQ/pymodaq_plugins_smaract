@@ -205,6 +205,31 @@ class SmarAct(object):
             self.close_communication()
             raise Exception('SmarAct SA_GotoPositionRelative failed')
 
+    def step_move(self, channel_index, steps, amplitude, frequency):
+        """This is an open-loop command, in contrast with the relative_move command. It performs a burst of steps with
+        the given parameters.
+
+        Parameters
+        ----------
+        channel_index: (unsigned int)
+        steps: (signed int) Number and direction of steps to perform. The valid range is -30,000...+30,000.
+        amplitude: (unsigned int) Amplitude that the steps are performed with. Lower amplitude values result in a
+            smaller step width. The range is 0...+4,095, O corresponds to 0V, +4,095 to 100V.
+        frequency : (unsigned int) Frequency in Hz that the steps are performed with. Valid range is 1...18,500.
+        """
+
+        status = SmaractDll.SA_StepMove_S(
+            ctypes.c_ulong(self.controller_index),
+            ctypes.c_ulong(channel_index),
+            ctypes.c_long(steps),
+            ctypes.c_ulong(amplitude),
+            ctypes.c_ulong(frequency)
+        )
+
+        if status != 0:
+            self.close_communication()
+            raise Exception('SmarAct SA_StepMove failed.')
+
     def absolute_move(self, channel_index, absolute_position):
         """
             Go to an absolute position in nanometers
