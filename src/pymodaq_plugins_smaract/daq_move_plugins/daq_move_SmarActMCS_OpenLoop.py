@@ -1,22 +1,32 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
-    DataActuator # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
+    DataActuator  # common set of parameters for all actuators
+from pymodaq.utils.daq_utils import ThreadCommand  # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
-from easydict import EasyDict as edict
 from ..hardware.smaract.smaract import SmarAct
 from ..hardware.smaract.smaract import get_controller_locators
 
 
 class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
     """
-    This plugin supports only SmarAct actuators without sensor (open loop). There is no referencing. It considers only
-    relative moves.
+    This plugin supports only SmarAct actuators (with or without sensor) in open loop operation. There is no
+    referencing. It considers only moves as a number of steps.
+    This plugin should be compatible with any actuator (linear, rotation, goniometer...) since it does not depend on a
+    sensor type.
     We suppose to have one (or multiple) MCS controllers connected. With less than 9 channels each. If there is less
     channels the user should just ignore the other ones.
     PyMoDAQ version: 4.0.11
     OS: Windows 10
+    Tested with a MCS controller and a STT optical mount.
     The SmarAct MCS installer should have been run before using this plugin: PTC and MCSConfiguration softwares should
     be installed.
+
+    The size of each step can be tuned with the Amplitude parameter, but it seems like it is not something linear. For
+    example for the STT mount we observed a kind of threshold: if Amplitude < 1000, the actuator does not move.
+    The Frequency parameter is the number of steps done in a second. This should not be too high if the actuator is
+    placed under vacuum.
+
+    TODO: it should be possible to keep track of the sum of the number of steps the user has done in forward or
+        backward directions. This is not implemented for now.
     """
     _controller_units = "step"
     _epsilon = 1
@@ -30,12 +40,12 @@ class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
 
     params = [
         {
-            "title": "group parameter:",
-            "name": "group_parameter",
+            "title": "Controller parameters",
+            "name": "controller_parameters",
             "type": "group",
             "children": [
                 {
-                    "title": "Controller Name:",
+                    "title": "Controller Name",
                     "name": "smaract_mcs",
                     "type": "str",
                     "value": "SmarAct MCS controller",
@@ -48,6 +58,25 @@ class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
                     "limits": controller_locators,
                 },
             ],
+        },
+        {
+             "title": "Open loop move parameters",
+             "name": "open_loop_move_parameters",
+             "type": "group",
+             "children": [
+                 {
+                     "title": "Amplitude [0...+4095]",
+                     "name": "step_amplitude",
+                     "type": "int",
+                     "value": 1000,
+                 },
+                 {
+                     "title": "Frequency [1...+18,500] (Hz)",
+                     "name": "step_frequency",
+                     "type": "int",
+                     "value": 1000,
+                 },
+             ],
         },
     ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
 
@@ -72,7 +101,7 @@ class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
 
         if self.settings.child('multiaxes', 'multi_status').value() == "Master":
             self.controller.init_communication(
-                    self.settings["group_parameter", "controller_locator"])
+                    self.settings["controller_parameters", "controller_locator"])
         info = 'SmarAct stage initialized'
         initialized = True
 
@@ -93,12 +122,12 @@ class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(data=0.0)
+        pos = DataActuator(data=self.current_value)
         pos = self.get_position_with_scaling(pos)
         return pos
 
     def move_abs(self, value: DataActuator):
-        """ Move the actuator to the absolute target defined by value.
+        """Move the actuator to the absolute target defined by value.
 
         This plugin considers only relative moves, thus this method is not implemented.
 
@@ -111,33 +140,25 @@ class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
         pass
 
     def move_rel(self, value: DataActuator):
-        """ Move the actuator to the relative target actuator value defined by value.
+        """Move the actuator to the relative target actuator value defined by value.
 
         Parameters
         ----------
-        value: (float) value of the relative target positioning.
+        value: (float?) float or DataActuator?
         """
-        # limit position if bounds options has been selected and if position is
-        # out of them
-        position = (
-            self.check_bound(self.current_position + position)
-            - self.current_position)
-        self.target_position = position + self.current_position
-        # convert the user set position to the controller position if scaling
-        # has been activated by user
-        position = self.set_position_with_scaling(position)
-
-        # we convert position in nm
-        position = int(position * 1e3)
-
-        # the SmarAct controller asks for nanometers
-        self.controller.relative_move(self.settings["multiaxes", "axis"], position)
+        self.controller.step_move(
+            self.settings["multiaxes", "axis"],
+            int(value),
+            self.settings["open_loop_move_parameters", "step_amplitude"],
+            self.settings["open_loop_move_parameters", "step_frequency"],
+            )
 
     def move_home(self):
         """Move to home and reset position to zero.
         """
-
-        self.controller.find_reference(self.settings["multiaxes", "axis"])
+        self.emit_status(ThreadCommand('Update_Status', [
+            'This plugin considers only relative moves, the method "move_home" is not implemented.']))
+        pass
 
     def stop_motion(self):
         """
@@ -149,6 +170,9 @@ class DAQ_Move_SmarActMCS_OpenLoop(DAQ_Move_base):
         self.controller.stop(self.settings["multiaxes", "axis"])
 
         self.move_done()
+
+        self.emit_status(ThreadCommand('Update_Status', [
+            'The movement has been aborted.']))
 
 
 if __name__ == "__main__":
