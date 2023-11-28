@@ -23,8 +23,9 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
     controller_locators = get_controller_locators()
 
     is_multiaxes = True
-    # we suppose to have a MCS controller (first generation) with 3 channels (like the MCS-3D).
-    axes_names= {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2}
+    # we suppose to have a MCS controller (first generation) with up to 9 channels.
+    axes_names = {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2, 'Axis 4': 3, 'Axis 5': 4, 'Axis 6': 5, 'Axis 7': 6,
+                  'Axis 8': 7, 'Axis 9': 8}
     # bounds corresponding to the SLC-24180
     min_bound = -61500  # µm
     max_bound = +61500  # µm
