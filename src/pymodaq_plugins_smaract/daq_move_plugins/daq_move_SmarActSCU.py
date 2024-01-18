@@ -1,3 +1,7 @@
+"""At the first run, if the program complains about a _build_scu programm not being present, just run the
+_build_smaract.py, that will look at the C header file to produce connexion between the dll and the python files"""
+
+
 from typing import Union
 
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
@@ -82,9 +86,6 @@ class DAQ_Move_SmarAct(DAQ_Move_base):
         position = self.get_position_with_scaling(position)
         #position = self.target_position
         self.current_position = position
-
-        self.emit_status(ThreadCommand("check_position", [position]))
-
         return position
 
     def move_abs(self, position):
