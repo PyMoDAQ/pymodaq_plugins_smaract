@@ -33,7 +33,8 @@ Actuators
 
 * **SmaractMCS** SLC linear stages with sensor (S option) with MCS controller
 * **SmaractMCS2** SLC linear stages with sensor (S option) with MCS2 controller
-* **Smaract** SLC linear or angular stages with or without sensors using the Instrumental-lib package
+* **SmaractSCU** SLC linear or angular stages with or without sensors using the Instrumental-lib package and the
+  simpler SCU controller
 
 
 System requirements
