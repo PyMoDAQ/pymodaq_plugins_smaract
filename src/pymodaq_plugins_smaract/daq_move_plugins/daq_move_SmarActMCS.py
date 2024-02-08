@@ -1,8 +1,8 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main
 from pymodaq.utils.daq_utils import ThreadCommand
 from easydict import EasyDict as edict
-from ..hardware.smaract.smaract import SmarAct
-from ..hardware.smaract.smaract import get_controller_locators
+from pymodaq_plugins_smaract.hardware.smaract.smaract import SmarAct
+from pymodaq_plugins_smaract.hardware.smaract.smaract import get_controller_locators
 
 
 class DAQ_Move_SmarActMCS(DAQ_Move_base):
@@ -110,8 +110,6 @@ class DAQ_Move_SmarActMCS(DAQ_Move_base):
         # convert position if scaling options have been used, mandatory here
         position = self.get_position_with_scaling(position)
         self.current_position = position
-        self.emit_status(ThreadCommand("check_position", [position]))
-
         return position
 
     def move_abs(self, position):
