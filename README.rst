@@ -2,6 +2,8 @@ pymodaq_plugins_smaract (Smaract)
 #################################
 
 
+
+
 .. image:: https://img.shields.io/pypi/v/pymodaq_plugins_smaract.svg
    :target: https://pypi.org/project/pymodaq_plugins_smaract/
    :alt: Latest Version
