@@ -1,6 +1,4 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main
-from pymodaq.utils.daq_utils import ThreadCommand
-from easydict import EasyDict as edict
 from pymodaq_plugins_smaract.hardware.smaract.smaract import SmarAct
 from pymodaq_plugins_smaract.hardware.smaract.smaract import get_controller_locators
 
