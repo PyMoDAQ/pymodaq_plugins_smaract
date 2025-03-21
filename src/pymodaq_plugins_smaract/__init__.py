@@ -1,5 +1,15 @@
 from pathlib import Path
-from pymodaq.utils.logger import set_logger  # to be imported by other modules.
+from .utils import Config
 
-with open(str(Path(__file__).parent.joinpath('resources/VERSION')), 'r') as fvers:
-    __version__ = fvers.read().strip()
+from importlib.metadata import version, PackageNotFoundError
+
+from pymodaq.utils.logger import set_logger, get_module_name
+
+config = Config()
+try:
+    __version__ = version(__package__)
+except PackageNotFoundError:
+    __version__ = '0.0.0dev'
+
+
+
