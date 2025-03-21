@@ -10,7 +10,7 @@ import importlib
 import pkgutil
 from collections.abc import Iterable
 
-from pymodaq import Q_, Unit
+from pymodaq_data import Q_, Unit
 
 
 MANDATORY_MOVE_METHODS = ['ini_attributes', 'get_actuator_value', 'close', 'commit_settings',

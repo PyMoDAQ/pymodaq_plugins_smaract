@@ -1,6 +1,5 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main
-from pymodaq_plugins_smaract.hardware.smaract.smaract import SmarAct
-from pymodaq_plugins_smaract.hardware.smaract.smaract import get_controller_locators
+from pymodaq_plugins_smaract.hardware.smaract.smaract import SmarAct, get_controller_locators
 
 
 class DAQ_Move_SmarActMCS(DAQ_Move_base):
