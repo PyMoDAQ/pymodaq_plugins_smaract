@@ -1,11 +1,11 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
-from pymodaq.utils.parameter import Parameter
-from ..hardware.smaract.smaract_MCS2_wrapper import SmarActMCS2Wrapper
-from ..hardware.smaract.smaract_MCS2_wrapper import get_controller_locators
-from pymodaq.utils.config import Config
+from pymodaq_utils.utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+from pymodaq_gui.parameter import Parameter
 
-config = Config()
+from pymodaq_plugins_smaract.hardware.smaract.smaract_MCS2_wrapper import SmarActMCS2Wrapper
+from pymodaq_plugins_smaract.hardware.smaract.smaract_MCS2_wrapper import get_controller_locators
+
+
 
 """This plugin handles SmarAct MCS2 controller with LINEAR positioners with the
     S option (which means that an encoder is present and give a feedback on the

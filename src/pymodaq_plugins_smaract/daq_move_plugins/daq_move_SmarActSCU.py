@@ -5,10 +5,14 @@ _build_smaract.py, that will look at the C header file to produce connexion betw
 from typing import Union
 
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
-from pymodaq.utils.daq_utils import ThreadCommand
-from easydict import EasyDict as edict
+from pymodaq_utils.logger import set_logger, get_module_name
+logger = set_logger(get_module_name(__file__))
+
 from instrumental import instrument, list_instruments
-from instrumental.drivers.motion._smaract.scu import SCU, SCULinear, SCURotation, Q_
+try:
+    from instrumental.drivers.motion._smaract.scu import SCU, SCULinear, SCURotation, Q_
+except Exception as e:
+    logger.exception(f'Could not load the SmarAct instrumental drivers: {str(e)}')
 
 
 psets = list_instruments(module='motion._smaract')

@@ -4,6 +4,9 @@ import ctypes
 import os
 import re
 
+from pymodaq_utils.logger import set_logger, get_module_name
+
+
 """The API documentation is in SmarAct MCS2 Programmers Guide, which should be
    in the same folder as this file.
     
@@ -20,11 +23,18 @@ type etc) has been done via the SmarAct MCS2ServiceTool software.
     - controller: MCS2 in closed loop, positioner type = SL...S1SS (300)
 """
 
+logger = set_logger(get_module_name(__file__))
+
 # The SmarActCTL.dll should also be in the current folder, but also
 # SmarActCTL.lib, SmarActIO.dll, SmarActSI.dll, SmarActSI.lib
 # The CDLL function asks for the full path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-smaract_dll = ctypes.CDLL(os.path.join(dir_path, "SmarActCTL.dll"))
+try:
+    smaract_dll = ctypes.CDLL(os.path.join(dir_path, "SmarActCTL.dll"))
+except Exception as e:
+    smaract_dll = None
+    logger.warning(f'Could not load the SmarActCTL dll and/or its dependencies: {str(e)}')
+
 
 
 def get_controller_locators():
@@ -37,6 +47,8 @@ def get_controller_locators():
     -------
     controller_locators : list of str
     """
+    if smaract_dll is None:
+        return []
     ioListSize = 4096
     options = ctypes.c_char()
     outList = (' ' * ioListSize).encode()
@@ -54,7 +66,7 @@ def get_controller_locators():
     controller_locators = re.findall("usb:sn:MCS2-[0-9]*", outList.decode())
 
     if not controller_locators:
-        raise Exception('SmarActMCS2Wrapper: No controller found !')
+        logger.warning('No SmarAct MCS2 controller found')
 
     return controller_locators
 

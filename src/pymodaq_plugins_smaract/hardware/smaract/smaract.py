@@ -4,6 +4,8 @@ import ctypes
 import os
 import re
 
+from pymodaq_utils.logger import set_logger, get_module_name
+
 """
 The documentation of the .dll is in SmarAct MCS Programmers Guide.
 We suppose that the configuration of the controllers (sensor type etc) has been done via the SmarAct MCS Configuration
@@ -13,10 +15,16 @@ of the controller.
 Tested with SLC-1740-S (closed loop with nanometer precision sensor) connected to a MCS-3D or MCS-3C controller.
 """
 
+logger = set_logger(get_module_name(__file__))
+
 # We suppose the .dll library is in the same directory
 # The CDLL function asks for the full path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-SmaractDll = ctypes.CDLL(os.path.join(dir_path, "MCSControl.dll"))
+try:
+    smaract_dll = ctypes.CDLL(os.path.join(dir_path, "MCSControl.dll"))
+except Exception as e:
+    smaract_dll = None
+    logger.warning(f'Could not load the SmarActCTL dll and/or its dependencies: {str(e)}')
 
 
 def get_controller_locators():
@@ -27,12 +35,14 @@ def get_controller_locators():
     -------
     controller_locators : list of str
     """
+    if smaract_dll is None:
+        return []
     ioListSize = 4096
     options = ctypes.c_char()
     outList = (' ' * ioListSize).encode()
     ioListSize = ctypes.c_ulong(ioListSize)
 
-    status = SmaractDll.SA_FindSystems(
+    status = smaract_dll.SA_FindSystems(
         ctypes.byref(options),
         outList,
         ctypes.byref(ioListSize)
@@ -44,7 +54,7 @@ def get_controller_locators():
     controller_locators = re.findall("usb:id:[0-9]*", outList.decode())
 
     if not controller_locators:
-        raise Exception('No controller found')
+        logger.warning('No SmarAct MCS controller found')
 
     return controller_locators
 
@@ -69,7 +79,7 @@ class SmarAct(object):
         # we choose the synchronous communication mode
         options = 'sync'.encode('ascii')
 
-        status = SmaractDll.SA_OpenSystem(
+        status = smaract_dll.SA_OpenSystem(
             ctypes.byref(controller_index),
             controller_locator.encode('ascii'),
             options
@@ -96,7 +106,7 @@ class SmarAct(object):
         """
         numberOfChannels = ctypes.c_ulong()
 
-        status = SmaractDll.SA_GetNumberOfChannels(
+        status = smaract_dll.SA_GetNumberOfChannels(
             ctypes.c_ulong(self.controller_index),
             ctypes.byref(numberOfChannels)
         )
@@ -111,7 +121,7 @@ class SmarAct(object):
         """
             Close the communication with the controller.
         """
-        status = SmaractDll.SA_CloseSystem(
+        status = smaract_dll.SA_CloseSystem(
             ctypes.c_ulong(self.controller_index)
         )
 
@@ -134,7 +144,7 @@ class SmarAct(object):
 
         position = ctypes.c_long()
 
-        status = SmaractDll.SA_GetPosition_S(
+        status = smaract_dll.SA_GetPosition_S(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
             ctypes.byref(position)
@@ -165,7 +175,7 @@ class SmarAct(object):
         # the reference mark
         auto_zero = 1
 
-        status = SmaractDll.SA_FindReferenceMark_S(
+        status = smaract_dll.SA_FindReferenceMark_S(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
             ctypes.c_ulong(direction),
@@ -194,7 +204,7 @@ class SmarAct(object):
         # hold time = 60,000 ms corresponds to infinite holding
         hold_time = 60000
 
-        status = SmaractDll.SA_GotoPositionRelative_S(
+        status = smaract_dll.SA_GotoPositionRelative_S(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
             ctypes.c_long(relative_position),
@@ -220,7 +230,7 @@ class SmarAct(object):
         # hold time = 60,000 ms corresponds to infinite holding
         hold_time = 60000
 
-        status = SmaractDll.SA_GotoPositionAbsolute_S(
+        status = smaract_dll.SA_GotoPositionAbsolute_S(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index),
             ctypes.c_long(absolute_position),
@@ -241,7 +251,7 @@ class SmarAct(object):
         channel_index: unsigned int
         """
 
-        status = SmaractDll.SA_Stop_S(
+        status = smaract_dll.SA_Stop_S(
             ctypes.c_ulong(self.controller_index),
             ctypes.c_ulong(channel_index)
         )
