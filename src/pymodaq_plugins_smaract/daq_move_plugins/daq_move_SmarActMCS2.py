@@ -1,10 +1,13 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq_utils.utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+
+
+from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_parameters_fun,
+                                                          main, DataActuatorType, DataActuator)  # common set of parameters for all actuators
+from pymodaq_utils.utils import ThreadCommand, getLineInfo
+
 from pymodaq_gui.parameter import Parameter
 
 from pymodaq_plugins_smaract.hardware.smaract.smaract_MCS2_wrapper import SmarActMCS2Wrapper
 from pymodaq_plugins_smaract.hardware.smaract.smaract_MCS2_wrapper import get_controller_locators
-
 
 
 """This plugin handles SmarAct MCS2 controller with LINEAR positioners with the
@@ -35,16 +38,13 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
     is_multiaxes = True  # we suppose a have a MCS2 controller with a sensor
     # module for 3 channels (stages).
 
-    axes_names= {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2}  # be careful that the channel index starts at 0
+    axis_names= {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2}  # be careful that the channel index starts at 0
     # and not at 1 has is done in MCS2ServiceTool
 
-    # bounds corresponding to the SLC-24180. Will be used at default if user doesn't provide other ones.
-    min_bound = -61500  # µm
-    max_bound = +61500  # µm
-
-    offset = 0  # µm
+    data_actuator_type = DataActuatorType.DataActuator
 
     _epsilon = 0.005 # µm   precision tolerance for movement
+
 
     params = [
                  {'title': 'group parameter:',
@@ -60,23 +60,22 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
                       'name': 'controller_locator', 'type': 'list',
                       'limits': controller_locators},
                   ]}
-                ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+                ] + comon_parameters_fun(axis_names=axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
         self.controller: SmarActMCS2Wrapper = None
 
-    def get_actuator_value(self):
+    def get_actuator_value(self) -> DataActuator:
         """Get the current value from the hardware with scaling conversion.
 
         Returns
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = self.controller.get_position(
-            self.settings.child('multiaxes', 'axis').value())
-        pos = float(pos) / 1e6  # the position given by the
-        # controller is in picometers, we convert in micrometers
+        pos = self.controller.get_position(self.axis_value)
+        pos = DataActuator(data=pos, units='pm').units_as(self.axis_unit)
         pos = self.get_position_with_scaling(pos)
+        # the position given by the controller is in picometers, we convert in plugin units
         return pos
 
     def close(self):
@@ -108,27 +107,23 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-
-        self.ini_stage_init(old_controller=controller,
-                            new_controller=SmarActMCS2Wrapper())
+        if self.is_master:
+            self.controller = SmarActMCS2Wrapper()
+            self.controller.init_communication(
+                self.settings['group_parameter', 'controller_locator'])
+        else:
+            self.controller = controller
 
         # min and max bounds will depend on which positionner is plugged.
         self.settings.child('bounds', 'is_bounds').setValue(True)
-        if self.settings.child('bounds', 'min_bound').value() == 0:
-            self.settings.child('bounds', 'min_bound').setValue(self.min_bound)
+        self.settings.child('bounds', 'min_bound').setValue(self.min_bound)
+        self.settings.child('bounds', 'max_bound').setValue(self.max_bound)
 
-        if self.settings.child('bounds', 'max_bound').value() == 1:
-            self.settings.child('bounds', 'max_bound').setValue(self.max_bound)
-
-        if self.settings['multiaxes', 'multi_status'] == "Master":
-            self.controller.init_communication(
-                self.settings.child('group_parameter',
-                                    'controller_locator').value())
         initialized = True
         info = "Smaract stage initialized"
         return info, initialized
 
-    def move_abs(self, value):
+    def move_abs(self, value: DataActuator):
         """ Move the actuator to the absolute target defined by value
 
         Parameters
@@ -139,11 +134,10 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         value = self.check_bound(value)  # if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        value = int(value * 1e6)
-        self.controller.absolute_move(self.settings['multiaxes', 'axis'], value)
-        self.emit_status(ThreadCommand('Update_Status', [f'Moving to {self.target_value}']))
+        value = int(value.units_as('pm').value())
+        self.controller.absolute_move(self.axis_value, value)
 
-    def move_rel(self, value):
+    def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
 
         Parameters
@@ -155,22 +149,19 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         relative_move = self.set_position_relative_with_scaling(value)
 
         # convert relative_move in picometers
-        relative_move = int(relative_move*1e6)
+        relative_move = int(relative_move.units_as('pm').value())
 
-        self.controller.relative_move(self.settings['multiaxes', 'axis'], relative_move)
-        self.emit_status(ThreadCommand('Update_Status', [f'Moving to {self.target_value}']))
+        self.controller.relative_move(self.axis_value, relative_move)
 
     def move_home(self):
         """Move to the physical reference and reset position to 0
         """
-        self.controller.find_reference(self.settings['multiaxes', 'axis'])
-        self.emit_status(ThreadCommand('Update_Status',
-                                       ['The positioner has been referenced']))
+        self.controller.find_reference(self.axis_value)
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
-        self.controller.stop(self.settings['multiaxes', 'axis'])
-        self.emit_status(ThreadCommand('Update_Status', ['The positioner has been stopped']))
+        self.controller.stop(self.axis_value)
+
 
 
 if __name__ == '__main__':
