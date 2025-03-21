@@ -114,10 +114,6 @@ class DAQ_Move_SmarActMCS2(DAQ_Move_base):
         else:
             self.controller = controller
 
-        # min and max bounds will depend on which positionner is plugged.
-        self.settings.child('bounds', 'is_bounds').setValue(True)
-        self.settings.child('bounds', 'min_bound').setValue(self.min_bound)
-        self.settings.child('bounds', 'max_bound').setValue(self.max_bound)
 
         initialized = True
         info = "Smaract stage initialized"
