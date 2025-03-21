@@ -25,12 +25,9 @@ type etc) has been done via the SmarAct MCS2ServiceTool software.
 
 logger = set_logger(get_module_name(__file__))
 
-# The SmarActCTL.dll should also be in the current folder, but also
-# SmarActCTL.lib, SmarActIO.dll, SmarActSI.dll, SmarActSI.lib
-# The CDLL function asks for the full path
-dir_path = os.path.dirname(os.path.realpath(__file__))
+
 try:
-    smaract_dll = ctypes.CDLL(os.path.join(dir_path, "SmarActCTL.dll"))
+    smaract_dll = ctypes.CDLL("SmarActCTL.dll")
 except Exception as e:
     smaract_dll = None
     logger.warning(f'Could not load the SmarActCTL dll and/or its dependencies: {str(e)}')
