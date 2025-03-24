@@ -7,13 +7,13 @@ from typing import Optional
 import ctypes
 from pymodaq_utils.logger import set_logger, get_module_name
 
-
-from pymodaq_plugins_smaract.hardware import MCS2_bindings as bindings
-
-
-
-
 logger = set_logger(get_module_name(__file__))
+
+try:
+    from pymodaq_plugins_smaract.hardware import MCS2_bindings as bindings
+except Exception as e:
+    bindings = None
+    logger.warning(f'Could not load Smaract MCS2 bindings: {str(e)}')
 
 
 
@@ -27,6 +27,8 @@ def get_controller_locators():
     -------
     controller_locators : list of str
     """
+    if bindings is None:
+        return []
     try:
         devices = bindings.FindDevices()
     except bindings.Error as e:
