@@ -10,6 +10,8 @@ from pymodaq_data import Unit
 from pymodaq_plugins_smaract.hardware.MCS2_wrapper import SmarActMCS2Wrapper, get_controller_locators
 
 
+controller_locators = get_controller_locators()
+
 
 class DAQ_Move_MCS2(DAQ_Move_base):
     """This plugin handles SmarAct MCS2 controller with positioners with the
@@ -29,9 +31,6 @@ class DAQ_Move_MCS2(DAQ_Move_base):
     It has been tested on Windows 10, with SLC positioner type with enabled
     sensors.
     """
-
-
-    controller_locators = get_controller_locators()
 
     is_multiaxes = True
     axis_names= {'Axis 1': 0, 'Axis 2': 1, 'Axis 3': 2}

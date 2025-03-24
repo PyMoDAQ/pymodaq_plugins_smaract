@@ -27,10 +27,15 @@ def get_controller_locators():
     -------
     controller_locators : list of str
     """
-    devices = bindings.FindDevices()
+    try:
+        devices = bindings.FindDevices()
+    except bindings.Error as e:
+        logger.warning('Smaract Library could not find any device')
+        devices = []
     if not isinstance(devices, list):
         devices = [devices]
     return devices
+
 
 class SmarActMCS2Wrapper:
     """The API documentation is in SmarAct MCS2 Programmers Guide, which is in the package docs folder
