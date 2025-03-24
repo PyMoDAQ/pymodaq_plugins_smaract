@@ -92,7 +92,12 @@ def test_move_has_correct_units():
         name = plug.split('daq_move_')[1]
         klass = getattr(getattr(move_mod, plug), f'DAQ_Move_{name}')
         if not isinstance(klass._controller_units, list):
-            units = [klass._controller_units]
+            if isinstance(klass._controller_units, dict):
+                units = list(klass._controller_units.values())
+            elif isinstance(klass._controller_units, str):
+                units = [klass._controller_units]
+            else:
+                raise TypeError(f'{klass._controller_units} is an invalid type')
         else:
             units = klass._controller_units
         for unit in units:
