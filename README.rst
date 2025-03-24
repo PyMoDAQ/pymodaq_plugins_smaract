@@ -40,6 +40,7 @@ Actuators
 
 Installation instructions
 =========================
+
 Operating system: Windows 7 or 10 (Mac and linux for the **MCS2**)
 Python: >=3.9
 PyMoDAQ: >=5.0.2
