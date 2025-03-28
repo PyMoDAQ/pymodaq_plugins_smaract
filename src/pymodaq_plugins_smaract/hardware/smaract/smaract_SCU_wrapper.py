@@ -282,4 +282,3 @@ class SmarActSCUWrapper:
         if local_1 != ErrorCode.OK.value:
             raise Error("GetPosition_S", local_1, {"deviceIndex": deviceIndex, "channelIndex": channelIndex})
         return local_0[0]
-
