@@ -18,8 +18,9 @@ def get_devices():
     list(int)
     list(SCUWrapper or SCULinear or SCURotation)
     """
+
     ids = bindings.GetAvailableDevices()
-    ##ids = [ids]
+    #ids = [ids]
     bindings.InitDevices(configuration=bindings.SYNCHRONOUS_COMMUNICATION)
     ptype = []
 
@@ -30,24 +31,25 @@ def get_devices():
 
         while True:
             try:
-                bindings.GetStatus_S(ids, ind_channel)
+                bindings.GetStatus_S(ids[ind[0]], ind_channel)
             except bindings.Error as e:
                 # will fire an error if the ind_channel is invalid
                 break
             try:
-                sensor = bool(bindings.GetSensorPresent_S(ind, ind_channel))
+                sensor = bool(bindings.GetSensorPresent_S(ids[ind[0]], ind_channel))
             except bindings.Error as e:
                 sensor = False
             if sensor:
                 try:
-                    bindings.GetAngle_S(ind,ind_channel)
+                    bindings.GetAngle_S(ids[ind[0]],ind_channel)
                     rotation = True
                 except bindings.Error:
                     rotation = False
-            ind_channel += 1
+            #ind_channel += 1
 
         for ind_channel in range(ind_channel):
-            ptype.append(SCUWrapper if not sensor else SCURotation if rotation else SCULinear)
+            ptype.append(SCUWrapper if sensor else SCURotation if rotation else SCULinear)
+            ind_channel += 1
 
     bindings.ReleaseDevices()
 
@@ -309,18 +311,18 @@ if __name__ == '__main__':
 
     wrapper = SCULinear()
 
-    connect_to = 722998302
-    device_index = ids.index(connect_to)
+
+    device_index = ids.index(ids[0])
 
     wrapper.open(device_index)
     try:
         #channel = wrapper.get_number_of_channels()
 
-        wrapper.move_home()
+        #wrapper.move_home()
 
-        time.sleep(2)
+        #time.sleep(2)
 
-        #wrapper.absolute_move(1500)
+        wrapper.move_abs(0)
 
         print(wrapper.get_position())
 
