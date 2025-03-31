@@ -8,10 +8,11 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, co
 from pymodaq.utils.daq_utils import ThreadCommand
 from easydict import EasyDict as edict
 
-from pymodaq_plugins_smaract.hardware.smaract.scu.scu_wrapper import SCUWrapper, SCULinear, SCURotation
+from pymodaq_plugins_smaract.hardware.smaract.scu.scu_wrapper import (get_devices, SCUType, SCUWrapper,
+                                                                      SCULinear, SCURotation)
 
-psets = get_devices(module='motion._smaract')
-psets_str = [f"Dev. Id{pset['id']} channel {pset['index']}" for pset in psets]
+psets: list[SCUType] = get_devices()
+psets_str = [f"Dev. Id{pset.device_id} channel {pset.channel}" for pset in psets]
 
 
 class DAQ_Move_SmarActSCU(DAQ_Move_base):
@@ -19,7 +20,7 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
 
     """
     _controller_units = ""
-    _epsilon = 0.002
+    _epsilon = 2
     # find controller locators
 
     is_multiaxes = False
@@ -34,7 +35,7 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
     ##########################################################
 
     def ini_attributes(self):
-        self.controller: Union[SCUWrapper, SCULinear] = None
+        self.controller: Union[SCUWrapper, SCULinear, SCURotation] = None
         self.settings.child("epsilon").setValue(0.002)
 
     def commit_settings(self, param):
@@ -53,7 +54,7 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
         """
         index = self.settings.child('device').opts['limits'].index(self.settings['device'])
         if self.is_master:
-            self.controller = ...
+            self.controller = psets[index].scu_type()
         else:
             self.controller = controller
 
