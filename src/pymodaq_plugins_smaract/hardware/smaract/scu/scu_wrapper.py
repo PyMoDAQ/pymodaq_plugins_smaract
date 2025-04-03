@@ -71,10 +71,10 @@ class SCUWrapper:
     dev_type = 'stepper'
     units = 'steps'
 
-    amplitude_limits = (150, 1001)
-    frequency_limits = (1, 18501)
-    steps_limits = (-30000, 30001)
-    angle_limits = (-3599999, 3599999)
+    #amplitude_limits = (150, 1001)
+    #frequency_limits = (1, 18501)
+    #steps_limits = (-30000, 30001)
+    #angle_limits = (-3599999, 3599999)
 
 
     def __init__(self):
@@ -161,19 +161,6 @@ class SCUWrapper:
         print("not implemented")
 
 
-    def amp(self):
-        """
-        Presets the target channel's amplitude
-
-        Parameters:
-         - deviceIndex: Selects the device (zero-based)
-         - channelIndex: Selects the channel (zero-based)
-         - amplitude: Amplitude in 1/10th Volts that should be preset
-        """
-        amplitude = self._amplitude
-        bindings.SetAmplitude_S(self.device_index, self.channel_index, amplitude)
-
-
     def steps_move(self, n_steps : int):
         """
         Performs a burst of steps with the given parameters
@@ -216,6 +203,8 @@ class SCUWrapper:
 
         bindings.Stop_S(self.device_index, self.channel_index)
 
+
+
 class SCULinear(SCUWrapper):
 
     units ="µm"
@@ -246,8 +235,8 @@ class SCULinear(SCUWrapper):
         relative_move_value: signed int. Relative distance in 1/10th micrometers
         """
 
-        diff = 10
-        bindings.MovePositionRelative_S(self.device_index, self.channel_index,diff, self.hold_time)
+        diff = int(relative_move_value*10)
+        bindings.MovePositionRelative_S(self.device_index, self.channel_index, diff, self.hold_time)
 
 
     def get_position(self) -> float:
@@ -283,7 +272,7 @@ class SCULinear(SCUWrapper):
 
 class SCURotation(SCULinear):
 
-    units = "millidegree"
+    units = "degree"
 
     def move_abs(self,absolute_move_degrees):
         """
@@ -298,7 +287,7 @@ class SCURotation(SCULinear):
              - holdTime: Time (in milliseconds) the angle is actively held after
             reaching the target
             """
-        angle = int(absolute_move_degrees * 10)
+        angle = int(absolute_move_degrees * 10000)
         revolution = 0
         bindings.MoveAngleAbsolute_S(self.device_index, self.channel_index, angle, revolution, self.hold_time)
 
@@ -316,7 +305,7 @@ class SCURotation(SCULinear):
              - holdTime: Time (in milliseconds) the angle is actively held after
             reaching the target
             """
-        angle = int(rel_move_degrees * 10)
+        angle = int(rel_move_degrees * 10000)
         revolution=0
         bindings.MoveAngleRelative_S(self.device_index, self.channel_index, angle, revolution, self.hold_time)
 
@@ -333,22 +322,7 @@ class SCURotation(SCULinear):
             - revolution: Reserved for future use
             """
         angle = bindings.GetAngle_S(self.device_index, self.channel_index)
-        return float(angle / 10)
-
-    def move_home(self):
-        """
-            Starts the referencing procedure and moves the positioner to a known
-            physical position
-
-            Parameters:
-             - deviceIndex: Selects the device (zero-based)
-             - channelIndex: Selects the channel (zero-based)
-             - holdTime: Time (in milliseconds) the position/angle is actively held
-             after reaching the target
-             - autoZero: Selects whether the current position is set to zero upon
-            reaching the reference position
-        """
-        bindings.MoveToReference_S(self.device_index, self.channel_index, self.hold_time, autoZero=bindings.AUTO_ZERO)
+        return float(angle / 10000)
 
 
 if __name__ == '__main__':
