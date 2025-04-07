@@ -69,12 +69,12 @@ def get_devices():
 class SCUWrapper:
 
     dev_type = 'stepper'
-    units = 'steps'
+    units = ''
 
-    #amplitude_limits = (150, 1001)
-    #frequency_limits = (1, 18501)
-    #steps_limits = (-30000, 30001)
-    #angle_limits = (-3599999, 3599999)
+    amplitude_limits = (15, 100)
+    frequency_limits = (1, 18500)
+    steps_limits = (-30000, 30000)
+    angle_limits = (-3599999, 3599999)
 
 
     def __init__(self):
@@ -82,7 +82,7 @@ class SCUWrapper:
         self.device_index: Optional[int] = None
         self.channel_index = 0
         self.hold_time = 10
-        self._amplitude = 400    #between 150 and 1000
+        self._amplitude = 40    #between 150 and 1000
         self._frequency = 15000  #between 1 and 18500
         self._steps = 0      #between -30000 and 30000
 
@@ -98,8 +98,8 @@ class SCUWrapper:
     @amplitude.setter
     def amplitude(self, number : int):
         if isinstance(number, int) and 100 > number > 15 :
-            self._amplitude = number * 10
-            bindings.SetAmplitude_S(self.device_index, self.channel_index, self._amplitude)
+            self._amplitude = number
+            bindings.SetAmplitude_S(self.device_index, self.channel_index, self._amplitude*10)
 
 
     @property
@@ -161,7 +161,7 @@ class SCUWrapper:
         print("not implemented")
 
 
-    def steps_move(self, n_steps : int):
+    def move_rel(self, n_steps : int):
         """
         Performs a burst of steps with the given parameters
 
@@ -174,7 +174,23 @@ class SCUWrapper:
          - frequency: Frequency in Hz that the steps are performed with
         """
         self.steps += n_steps
-        bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude, self.frequency)
+        bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude*10, self.frequency)
+
+    def move_abs(self, n_steps):
+        """
+                Performs a burst of steps with the given parameters
+
+                Parameters:
+                 - deviceIndex: Selects the device (zero-based)
+                 - channelIndex: Selects the channel (zero-based)
+                 - steps: Number and direction of steps to perform
+                 - amplitude: Amplitude in 1/10th Volts that the steps are performed
+                with
+                 - frequency: Frequency in Hz that the steps are performed with
+                """
+
+        self.steps = self.steps - n_steps
+        bindings.MoveStep_S(self.device_index, self.channel_index, int(self.steps), self.amplitude*10, self.frequency)
 
 
     def get_position(self) -> float:
