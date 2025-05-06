@@ -65,12 +65,14 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         return info, initialized
 
     def close(self):
-        """Close the communication with the SmarAct controller.
+        """
+        Close the communication with the SmarAct controller.
         """
         self.controller.close()
 
     def get_actuator_value(self):
-        """Get the current position from the hardware with scaling conversion.
+        """
+        Get the current position from the hardware with scaling conversion.
 
         Returns
         -------
@@ -84,11 +86,12 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         return position
 
     def move_abs(self, position):
-        """Move to an absolute position
+        """
+        Move to an absolute position
 
-        Parameters
+        Parameters:
         ----------
-        position: float
+         - position: float
         """
         # limit position if bounds options has been selected and if position is
         # out of them
@@ -101,11 +104,12 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         self.controller.move_abs(position)
 
     def move_rel(self, position):
-        """Move to a relative position
+        """
+        Move to a relative position
 
-        Parameters
+        Parameters:
         ----------
-        position: float
+         - position: float
         """
         position = (self.check_bound(self.current_position + position) - self.current_position)
         self.target_position = position + self.current_position
@@ -114,13 +118,15 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         self.controller.move_rel(position)
 
     def move_home(self):
-        """Move to home and reset position to zero.
+        """
+        Move to home and reset position to zero.
         """
         self.controller.move_home()
         self.get_actuator_value()
 
     def stop_motion(self):
         """
+        Stop any ongoing movement of the positionner.
         """
         self.controller.stop()
         self.move_done()

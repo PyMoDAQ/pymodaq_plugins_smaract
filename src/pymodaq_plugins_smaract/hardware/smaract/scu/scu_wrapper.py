@@ -32,7 +32,7 @@ def get_devices():
     #ids = [ids]
     bindings.InitDevices(configuration=bindings.SYNCHRONOUS_COMMUNICATION)
     ptype = []
-    n_channel = 1  # SCU devices have only one channel
+    n_channel = 1  # SCU devices only have one channel
 
     for ind_device, dev_sn in enumerate(ids):
         rotation = False
@@ -54,7 +54,6 @@ def get_devices():
                     rotation = True
                 except bindings.Error:
                     rotation = False
-                #ind_channel += 1
 
                 ptype.append(SCUType(dev_sn,
                                      SCUWrapper if not sensor else SCURotation if rotation else SCULinear,
@@ -82,8 +81,8 @@ class SCUWrapper:
         self.device_index: Optional[int] = None
         self.channel_index = 0
         self.hold_time = 10
-        self._amplitude = 40    #between 150 and 1000
-        self._frequency = 15000  #between 1 and 18500
+        self._amplitude = 1000    #between 150 and 1000
+        self._frequency = 440  #between 1 and 18500
         self._steps = 0      #between -30000 and 30000
 
 
@@ -151,43 +150,48 @@ class SCUWrapper:
             physical position
 
             Parameters:
+            ----------
              - deviceIndex: Selects the device (zero-based)
              - channelIndex: Selects the channel (zero-based)
              - holdTime: Time (in milliseconds) the position/angle is actively held
-             after reaching the target
+                after reaching the target
              - autoZero: Selects whether the current position is set to zero upon
-            reaching the reference position
+                reaching the reference position
         """
         print("not implemented")
 
 
     def move_rel(self, n_steps : int):
         """
-        Performs a burst of steps with the given parameters
+            Performs a burst of steps with the given parameters
 
-        Parameters:
-         - deviceIndex: Selects the device (zero-based)
-         - channelIndex: Selects the channel (zero-based)
-         - steps: Number and direction of steps to perform
-         - amplitude: Amplitude in 1/10th Volts that the steps are performed
-        with
-         - frequency: Frequency in Hz that the steps are performed with
+            Parameters:
+            ----------
+             - deviceIndex: Selects the device (zero-based)
+             - channelIndex: Selects the channel (zero-based)
+             - steps: Number and direction of steps to perform
+             - amplitude: Amplitude in Volts that the steps are performed with
+                        Note: The library expects the value in 1/10th Volts,
+                        so the value will be converted accordingly
+             - frequency: Frequency in Hz that the steps are performed with
         """
         self.steps += n_steps
         bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude*10, self.frequency)
 
     def move_abs(self, n_steps):
         """
-                Performs a burst of steps with the given parameters
+            Performs a burst of steps with the given parameters
 
-                Parameters:
-                 - deviceIndex: Selects the device (zero-based)
-                 - channelIndex: Selects the channel (zero-based)
-                 - steps: Number and direction of steps to perform
-                 - amplitude: Amplitude in 1/10th Volts that the steps are performed
-                with
-                 - frequency: Frequency in Hz that the steps are performed with
-                """
+            Parameters:
+            ----------
+             - deviceIndex: Selects the device (zero-based)
+             - channelIndex: Selects the channel (zero-based)
+             - steps: Number and direction of steps to perform
+             - amplitude: Amplitude in Volts that the steps are performed with
+                        Note: The library expects the value in 1/10th Volts,
+                        so the value will be converted accordingly
+             - frequency: Frequency in Hz that the steps are performed with
+        """
 
         self.steps = self.steps - n_steps
         bindings.MoveStep_S(self.device_index, self.channel_index, int(self.steps), self.amplitude*10, self.frequency)
@@ -198,6 +202,7 @@ class SCUWrapper:
             Returns the current position of a positioner
 
             Parameters:
+            ----------
              - deviceIndex: Selects the device (zero-based)
              - channelIndex: Selects the channel (zero-based)
 
@@ -209,12 +214,12 @@ class SCUWrapper:
 
 
     def stop(self):
-        """Stop any ongoing movement of the positionner. This command also
+        """Stop any ongoing movement of the positioner. This command also
             stops the hold position feature of closed-loop commands.
 
-        Parameters
-        ----------
-        self.channel_index: unsigned int
+            Parameters:
+            ----------
+             - self.channel_index: unsigned int
         """
 
         bindings.Stop_S(self.device_index, self.channel_index)
@@ -230,11 +235,13 @@ class SCULinear(SCUWrapper):
             If a mechanical end stop is detected while the command is in
             execution, the movement will be aborted (without notice).
 
-        Parameters
-        ----------
-        self.channel_index: unsigned int
-        absolute_move_micron: float
+            Parameters
+            ----------
+             - self.channel_index: unsigned int
+             - absolute_move_micron: float
             Absolute position in microns
+                Note: The library uses the value in 1/10th micrometers,
+                so the value will be converted accordingly
         """
         position = int(absolute_move_micron * 10)
         bindings.MovePositionAbsolute_S(self.device_index, self.channel_index, position, self.hold_time)
@@ -245,10 +252,12 @@ class SCULinear(SCUWrapper):
             If a mechanical end stop is detected while the command is in
             execution, the movement will be aborted (without notice).
 
-        Parameters
-        ----------
-        self.channel_index: unsigned int
-        relative_move_value: signed int. Relative distance in 1/10th micrometers
+            Parameters
+            ----------
+             - self.channel_index: unsigned int
+             - relative_move_value: signed int. Relative distance in micrometers
+                                Note: The library expects the value in 1/10th micrometers,
+                                so the value will be converted accordingly
         """
 
         diff = int(relative_move_value*10)
@@ -264,7 +273,9 @@ class SCULinear(SCUWrapper):
              - channelIndex: Selects the channel (zero-based)
 
             Return value(s):
-             - position: Buffer for the current position given in 1/10th micrometers
+             - position: Buffer for the current position given in micrometers
+                        Note: The library uses the value in 1/10th micrometers,
+                        so the value will be converted accordingly
         """
         position = bindings.GetPosition_S(self.device_index, self.channel_index)
 
@@ -276,6 +287,7 @@ class SCULinear(SCUWrapper):
             physical position
 
             Parameters:
+            ----------
              - deviceIndex: Selects the device (zero-based)
              - channelIndex: Selects the channel (zero-based)
              - holdTime: Time (in milliseconds) the position/angle is actively held
@@ -296,9 +308,12 @@ class SCURotation(SCULinear):
             control
 
             Parameters:
+            ----------
              - deviceIndex: Selects the device (zero-based)
              - channelIndex: Selects the channel (zero-based)
-             - angle: Absolute angle to move to in 1/10th milli degrees
+             - angle: Absolute angle to move to in degrees
+                    Note: The library expects the value in 1/10th milli degrees,
+                    so the value will be converted accordingly
              - revolution: Reserved for future use
              - holdTime: Time (in milliseconds) the angle is actively held after
             reaching the target
@@ -313,10 +328,12 @@ class SCURotation(SCULinear):
             angle using closed-loop control
 
             Parameters:
+            ----------
              - deviceIndex: Selects the device (zero-based)
              - channelIndex: Selects the channel (zero-based)
-             - angleDiff: Relative angle difference to move in 1/10th milli degrees
-
+             - angleDiff: Relative angle difference to move in degrees
+                        Note: The library expects the value in 1/10th milli degrees,
+                        so the value will be converted accordingly
              - revolutionDiff: Reserved for future use
              - holdTime: Time (in milliseconds) the angle is actively held after
             reaching the target
@@ -330,11 +347,14 @@ class SCURotation(SCULinear):
             Returns the current angle of a positioner
 
             Parameters:
+            ----------
             - deviceIndex: Selects the device (zero-based)
             - channelIndex: Selects the channel (zero-based)
 
             Return value(s):
-            - angle: Buffer for the current angle given in 1/10th milli degrees
+            - angle: Buffer for the current angle given in degrees
+                    Note: The library uses the value in 1/10th milli degrees,
+                    so the value will be converted accordingly
             - revolution: Reserved for future use
             """
         angle = bindings.GetAngle_S(self.device_index, self.channel_index)
@@ -359,7 +379,7 @@ if __name__ == '__main__':
 
         time.sleep(2)
 
-        #wrapper.move_abs(0)
+        bindings.MoveStep_S(0,0, 10000, 440, 18000)
 
         #print(wrapper.get_position())
 
