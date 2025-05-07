@@ -361,36 +361,4 @@ class SCURotation(SCULinear):
         return float(angle / 10000)
 
 
-if __name__ == '__main__':
-
-
-    ids = get_devices()
-
-    wrapper = SCULinear()
-
-
-    device_index = ids.index(ids[0])
-
-    wrapper.open(device_index)
-    try:
-        #channel = wrapper.get_number_of_channels()
-
-        wrapper.move_home()
-
-        time.sleep(2)
-
-        bindings.MoveStep_S(0,0, 10000, 440, 18000)
-
-        #print(wrapper.get_position())
-
-        #wrapper.steps_move(15000)
-        print(wrapper.get_position())
-
-
-    except Exception as e:
-        print(e)
-    finally:
-        wrapper.close()
-
-
 
