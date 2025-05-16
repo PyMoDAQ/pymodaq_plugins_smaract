@@ -1,6 +1,3 @@
-"""At the first run, if the program complains about a _build_scu programm not being present, just run the
-_build_smaract.py, that will look at the C header file to produce connexion between the dll and the python files"""
-
 
 from typing import Union, List, Dict
 

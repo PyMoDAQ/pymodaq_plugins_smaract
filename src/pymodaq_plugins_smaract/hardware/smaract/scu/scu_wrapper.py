@@ -298,7 +298,7 @@ class SCULinear(SCUWrapper):
         bindings.MoveToReference_S(self.device_index, self.channel_index, self.hold_time, autoZero=bindings.AUTO_ZERO)
 
 
-class SCURotation(SCULinear):
+class SCURotation(SCUWrapper):
 
     units = "degree"
 
