@@ -54,10 +54,9 @@ def get_devices():
                     rotation = True
                 except bindings.Error:
                     rotation = False
-
-                ptype.append(SCUType(dev_sn,
-                                     SCUWrapper if not sensor else SCURotation if rotation else SCULinear,
-                                     ind_channel))
+            ptype.append(SCUType(dev_sn,
+                                 SCUWrapper if not sensor else SCURotation if rotation else SCULinear,
+                                 ind_channel))
 
     bindings.ReleaseDevices()
 
@@ -80,8 +79,8 @@ class SCUWrapper:
 
         self.device_index: Optional[int] = None
         self.channel_index = 0
-        self.hold_time = 10
-        self._amplitude = 1000    #between 150 and 1000
+        self.hold_time = 0
+        self._amplitude = 100    #between 15 and 100
         self._frequency = 440  #between 1 and 18500
         self._steps = 0      #between -30000 and 30000
 
@@ -96,7 +95,7 @@ class SCUWrapper:
 
     @amplitude.setter
     def amplitude(self, number : int):
-        if isinstance(number, int) and 100 > number > 15 :
+        if isinstance(number, int) and SCUWrapper.amplitude_limits[0] < number < SCUWrapper.amplitude_limits[1]:
             self._amplitude = number
             bindings.SetAmplitude_S(self.device_index, self.channel_index, self._amplitude*10)
 
@@ -110,7 +109,7 @@ class SCUWrapper:
 
     @frequency.setter
     def frequency(self, number: int):
-        if isinstance(number, int) and 18500 > number > 1:
+        if isinstance(number, int) and SCUWrapper.frequency_limits[0] < number < SCUWrapper.frequency_limits[1]:
             self._frequency = number
 
     @property
@@ -122,7 +121,7 @@ class SCUWrapper:
 
     @steps.setter
     def steps(self, number: int):
-        if isinstance(number, int) and 30000 > number > -30000:
+        if isinstance(number, int) and SCUWrapper.steps_limits[0] < number < SCUWrapper.steps_limits[1]:
             self._steps = number
 
 
@@ -149,16 +148,9 @@ class SCUWrapper:
             Starts the referencing procedure and moves the positioner to a known
             physical position
 
-            Parameters:
-            ----------
-             - deviceIndex: Selects the device (zero-based)
-             - channelIndex: Selects the channel (zero-based)
-             - holdTime: Time (in milliseconds) the position/angle is actively held
-                after reaching the target
-             - autoZero: Selects whether the current position is set to zero upon
-                reaching the reference position
         """
         print("not implemented")
+
 
 
     def move_rel(self, n_steps : int):
@@ -178,7 +170,7 @@ class SCUWrapper:
         self.steps += n_steps
         bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude*10, self.frequency)
 
-    def move_abs(self, n_steps):
+    def move_abs(self, steps):
         """
             Performs a burst of steps with the given parameters
 
@@ -193,7 +185,7 @@ class SCUWrapper:
              - frequency: Frequency in Hz that the steps are performed with
         """
 
-        self.steps = self.steps - n_steps
+        self.steps = steps - self.steps
         bindings.MoveStep_S(self.device_index, self.channel_index, int(self.steps), self.amplitude*10, self.frequency)
 
 
