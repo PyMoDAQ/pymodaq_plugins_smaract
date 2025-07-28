@@ -1,15 +1,17 @@
 
 from typing import Union, List, Dict
 
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun, DataActuatorType
 from pymodaq.utils.daq_utils import ThreadCommand
 from easydict import EasyDict as edict
 
 from pymodaq_plugins_smaract.hardware.smaract.scu.scu_wrapper import (get_devices, SCUType, SCUWrapper,
                                                                       SCULinear, SCURotation)
 
+from pymodaq.utils.data import DataActuator
+
 psets: list[SCUType] = get_devices()
-psets_str = [f"Dev. Id{pset.device_id} channel {pset.channel}" for pset in psets]
+psets_str = [f"Dev. Id{pset.device_id} channel {pset.channel} ({pset.scu_type.__name__})" for pset in psets]
 
 
 class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
@@ -22,6 +24,8 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
 
     is_multiaxes = True
     _axis_names = ['1']
+
+    data_actuator_type = DataActuatorType.DataActuator
 
     params = [
                  {'title': 'Device', 'name': 'device', 'type': 'list','limits': psets_str},
@@ -75,7 +79,7 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        position = self.controller.get_position()
+        position = DataActuator(data=self.controller.get_position(), units=self.axis_unit)
         # convert position if scaling options have been used, mandatory here
         position = self.get_position_with_scaling(position)
         #position = self.target_position
@@ -98,7 +102,7 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         # has been activated by user
         position = self.set_position_with_scaling(position)
 
-        self.controller.move_abs(position)
+        self.controller.move_abs(position.value())
 
     def move_rel(self, position):
         """
@@ -112,7 +116,7 @@ class DAQ_Move_SmarActSCUINSA(DAQ_Move_base):
         self.target_position = position + self.current_position
         position = self.set_position_relative_with_scaling(position)
 
-        self.controller.move_rel(position)
+        self.controller.move_rel(position.value())
 
     def move_home(self):
         """

@@ -15,7 +15,7 @@ class SCUType:
         self.channel = channel
 
     def __repr__(self):
-        return f'SN: {self.device_id}, type:{self.scu_type}, channel: {self.channel}'
+        return f'SN: {self.device_id}, type:{self.scu_type.__name__}, channel: {self.channel}'
 
 
 def get_devices():
@@ -82,8 +82,7 @@ class SCUWrapper:
         self.hold_time = 0
         self._amplitude = 100    #between 15 and 100
         self._frequency = 440  #between 1 and 18500
-        self._steps = 0      #between -30000 and 30000
-
+        self._position = 0 #between -30000 and 30000
 
 
     @property
@@ -167,8 +166,8 @@ class SCUWrapper:
                         so the value will be converted accordingly
              - frequency: Frequency in Hz that the steps are performed with
         """
-        self.steps += n_steps
         bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude*10, self.frequency)
+        self._position += int(n_steps)
 
     def move_abs(self, steps):
         """
@@ -185,8 +184,9 @@ class SCUWrapper:
              - frequency: Frequency in Hz that the steps are performed with
         """
 
-        self.steps = steps - self.steps
-        bindings.MoveStep_S(self.device_index, self.channel_index, int(self.steps), self.amplitude*10, self.frequency)
+        n_steps = int(steps - self._position)
+        bindings.MoveStep_S(self.device_index, self.channel_index, n_steps, self.amplitude*10, self.frequency)
+        self._position = steps
 
 
     def get_position(self) -> float:
@@ -202,7 +202,7 @@ class SCUWrapper:
              - position: Buffer for the current position given in steps
             meters
         """
-        return self._steps
+        return self._position
 
 
     def stop(self):
