@@ -46,7 +46,7 @@ Python: >=3.9
 PyMoDAQ: >=5.0.2
 
 The **MCS2** actuator uses python bindings of the Smaract Library as provided by Smaract.
-It can seamlessly be used on any platform once you've installed the corresponding SDK (and its *.dll or *.so
+It can seamlessly be used on any platform once you've installed the corresponding SDK (and its \*.dll or \*.so
 library)
 
 
