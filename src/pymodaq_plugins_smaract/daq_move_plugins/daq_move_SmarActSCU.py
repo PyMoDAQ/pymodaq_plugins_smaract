@@ -1,22 +1,17 @@
-"""At the first run, if the program complains about a _build_scu programm not being present, just run the
-_build_smaract.py, that will look at the C header file to produce connexion between the dll and the python files"""
 
+from typing import Union, List, Dict
 
-from typing import Union
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun, DataActuatorType
+from pymodaq.utils.daq_utils import ThreadCommand
+from easydict import EasyDict as edict
 
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
-from pymodaq_utils.logger import set_logger, get_module_name
-logger = set_logger(get_module_name(__file__))
+from pymodaq_plugins_smaract.hardware.smaract.scu.scu_wrapper import (get_devices, SCUType, SCUWrapper,
+                                                                      SCULinear, SCURotation)
 
-from instrumental import instrument, list_instruments
-try:
-    from instrumental.drivers.motion._smaract.scu import SCU, SCULinear, SCURotation, Q_
-except Exception as e:
-    logger.exception(f'Could not load the SmarAct instrumental drivers: {str(e)}')
+from pymodaq.utils.data import DataActuator
 
-
-psets = list_instruments(module='motion._smaract')
-psets_str = [f"Dev. Id{pset['id']} channel {pset['index']}" for pset in psets]
+psets: list[SCUType] = get_devices()
+psets_str = [f"Dev. Id{pset.device_id} channel {pset.channel} ({pset.scu_type.__name__})" for pset in psets]
 
 
 class DAQ_Move_SmarActSCU(DAQ_Move_base):
@@ -24,48 +19,46 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
 
     """
     _controller_units = ""
-    _epsilon = 0.002
+    _epsilon = 2
     # find controller locators
 
-    is_multiaxes = False
-    stage_names = []
+    is_multiaxes = True
+    _axis_names = ['1']
+
+    data_actuator_type = DataActuatorType.DataActuator
 
     params = [
-                 {'title': 'Device', 'name': 'device', 'type': 'list', 'limits': psets_str},
-                 {'title': 'Frequency (Hz)', 'name': 'frequency', 'type': 'int', 'value': 450},
-                 {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'int', 'value': 100},
-                 {'title': 'Max Frequency (Hz)', 'name': 'maxfreq', 'type': 'int', 'value': 18500},
-    ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
+                 {'title': 'Device', 'name': 'device', 'type': 'list','limits': psets_str},
+                 {'title': 'Frequency (Hz)', 'name': 'frequency', 'type': 'int', 'value': 1000, 'limits': SCUWrapper.frequency_limits},
+                 {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'int', 'value': 100, 'limits':SCUWrapper.amplitude_limits},
+    ] + comon_parameters_fun(is_multiaxes=is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
     ##########################################################
 
     def ini_attributes(self):
-        self.controller: Union[SCU, SCULinear, SCURotation] = None
-        self.settings.child("epsilon").setValue(0.002)
+        self.controller: Union[SCUWrapper, SCULinear, SCURotation] = None
+        self.settings.child("epsilon").setValue(2)
 
     def commit_settings(self, param):
         if param.name() == 'amplitude':
-            self.controller.amplitude = Q_(param.value(), units='V')
+            self.controller.amplitude = param.value()
         elif param.name() == 'frequency':
-            self.controller.frequency = Q_(param.value(), 'Hz')
-
-        elif param.name() == 'maxfreq':
-            self.controller.max_frequency = Q_(param.value(), 'Hz')
-            self.settings.child('maxfreq').setValue(self.controller.max_frequency.m_as('Hz'))
+            self.controller.frequency = param.value()
 
     def ini_stage(self, controller=None):
         """Initialize the controller and stages (axes) with given parameters.
 
         """
         index = self.settings.child('device').opts['limits'].index(self.settings['device'])
-        self.ini_stage_init(controller, instrument(psets[index]))
+        if self.is_master:
+            self.controller = psets[index].scu_type()
+            self.controller.open(index)
+            self.controller.amplitude = self.settings['amplitude']
+            self.controller.frequency = self.settings['frequency']
 
-        self.settings.child('units').setValue(self.controller.units)
-        self.settings.child('amplitude').setOpts(limits=list(self.controller.amplitude_limits.m_as('V')))
-        self.settings.child('frequency').setOpts(limits=list(self.controller.frequency_limits.m_as('Hz')))
-        self.settings.child('amplitude').setValue(self.controller.amplitude.m_as('V'))
-        self.settings.child('frequency').setValue(self.controller.frequency.m_as('Hz'))
-        if not isinstance(self.controller, SCU):
-            self.settings.child('maxfreq').setValue(self.controller.max_frequency.m_as('Hz'))
+        else:
+            self.controller = controller
+
+        self.axis_unit = self.controller.units
 
         info = ''
         initialized = True
@@ -73,19 +66,20 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
         return info, initialized
 
     def close(self):
-        """Close the communication with the SmarAct controller.
+        """
+        Close the communication with the SmarAct controller.
         """
         self.controller.close()
-        self.controller = None
 
     def get_actuator_value(self):
-        """Get the current position from the hardware with scaling conversion.
+        """
+        Get the current position from the hardware with scaling conversion.
 
         Returns
         -------
         float: The position obtained after scaling conversion.
         """
-        position = self.controller.check_position().magnitude
+        position = DataActuator(data=self.controller.get_position(), units=self.axis_unit)
         # convert position if scaling options have been used, mandatory here
         position = self.get_position_with_scaling(position)
         #position = self.target_position
@@ -93,11 +87,12 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
         return position
 
     def move_abs(self, position):
-        """Move to an absolute position
+        """
+        Move to an absolute position
 
-        Parameters
+        Parameters:
         ----------
-        position: float
+         - position: float
         """
         # limit position if bounds options has been selected and if position is
         # out of them
@@ -107,29 +102,32 @@ class DAQ_Move_SmarActSCU(DAQ_Move_base):
         # has been activated by user
         position = self.set_position_with_scaling(position)
 
-        self.controller.move_to(Q_(position, self.settings['units']), 'abs')
+        self.controller.move_abs(position.value())
 
     def move_rel(self, position):
-        """Move to a relative position
+        """
+        Move to a relative position
 
-        Parameters
+        Parameters:
         ----------
-        position: float
+         - position: float
         """
         position = (self.check_bound(self.current_position + position) - self.current_position)
         self.target_position = position + self.current_position
         position = self.set_position_relative_with_scaling(position)
 
-        self.controller.move_to(Q_(position, self.settings['units']), 'rel')
+        self.controller.move_rel(position.value())
 
     def move_home(self):
-        """Move to home and reset position to zero.
+        """
+        Move to home and reset position to zero.
         """
         self.controller.move_home()
         self.get_actuator_value()
 
     def stop_motion(self):
         """
+        Stop any ongoing movement of the positionner.
         """
         self.controller.stop()
         self.move_done()
