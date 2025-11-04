@@ -14,8 +14,6 @@ description = 'Set of PyMoDAQ plugins for linear actuators from Smaract (SLC pos
 
 dependencies = [
     "pymodaq>5.0.0",
-    'instrumental-lib',
-    'nicelib',
 ]
 
 authors = [
