@@ -33,23 +33,25 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **MCS2** positioner with sensor (S option) with MCS2 controller
-* **SmaractMCS** SLC linear stages with sensor (S option) with MCS controller
-* **SmaractMCS2** SLC linear stages with sensor (S option) with MCS2 controller (Legacy, use the MCS2)
+* **SmaractMCS1** SLC linear stages with sensor (S option) with MCS controller
+* **SmaractMCS2** positionner with sensor (S option) with MCS2 controller
 * **SmaractSCU** SLC linear or angular stages with or without sensors using the Instrumental-lib package and the
   simpler SCU controller
-
 
 Installation instructions
 =========================
 
-Operating system: Windows 7 or 10 (Mac and linux for the **MCS2**)
+Operating system: Windows & Linux.
 Python: >=3.9
 PyMoDAQ: >=5.0.2
 
-The **MCS2** actuator uses python bindings of the Smaract Library as provided by Smaract.
+The **MCS1** controller uses python bindings of the Smaract Library as provided by Smaract. It should work directly
+after installation of the plugin since the libraries are included. If it is not, try to run the .sh Bash script in the
+mcs1 folder (Linux case). Tested on Windows and Ubuntu.
+
+The **MCS2** controller uses python bindings of the Smaract Library as provided by Smaract.
 It can seamlessly be used on any platform once you've installed the corresponding SDK (and its \*.dll or \*.so
-library)
+library).
 
 
 
