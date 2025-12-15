@@ -132,7 +132,7 @@ class SmarActMCS1Wrapper(object):
         position.value:signed int
         """
 
-        position = ct.c_long()
+        position = ct.c_int32()
 
         status = bindings.SA_GetPosition_S(
             ct.c_ulong(self.controller_index),
