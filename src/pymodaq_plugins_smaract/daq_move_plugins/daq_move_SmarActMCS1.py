@@ -2,7 +2,7 @@
 
 from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_parameters_fun, main,
                                                           DataActuatorType, DataActuator)
-from pymodaq_plugins_smaract.hardware.smaract.mcs1.MCS1_wrapper import SmarActMCS1Wrapper, get_controller_locators
+from pymodaq_plugins_smaract.hardware.mcs1.MCS1_wrapper import SmarActMCS1Wrapper, get_controller_locators
 
 
 class DAQ_Move_SmarActMCS1(DAQ_Move_base):

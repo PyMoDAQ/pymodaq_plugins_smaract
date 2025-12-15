@@ -1,12 +1,6 @@
-import time
-from typing import Optional, List
-from dataclasses import dataclass
-from pathlib import Path
-import os
+from typing import Optional
 
-
-
-from pymodaq_plugins_smaract.hardware.smaract.scu import bindings
+from pymodaq_plugins_smaract.hardware.scu import bindings
 
 class SCUType:
     def __init__(self, id: int, scu_type, channel: int):
@@ -50,7 +44,7 @@ def get_devices():
                 sensor = False
             if sensor:
                 try:
-                    bindings.GetAngle_S(ind_device,ind_channel)
+                    bindings.GetAngle_S(ind_device, ind_channel)
                     rotation = True
                 except bindings.Error:
                     rotation = False
@@ -96,7 +90,7 @@ class SCUWrapper:
     def amplitude(self, number : int):
         if isinstance(number, int) and SCUWrapper.amplitude_limits[0] < number < SCUWrapper.amplitude_limits[1]:
             self._amplitude = number
-            bindings.SetAmplitude_S(self.device_index, self.channel_index, self._amplitude*10)
+            bindings.SetAmplitude_S(self.device_index, self.channel_index, self._amplitude * 10)
 
 
     @property
@@ -166,7 +160,7 @@ class SCUWrapper:
                         so the value will be converted accordingly
              - frequency: Frequency in Hz that the steps are performed with
         """
-        bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude*10, self.frequency)
+        bindings.MoveStep_S(self.device_index, self.channel_index, int(n_steps), self.amplitude * 10, self.frequency)
         self._position += int(n_steps)
 
     def move_abs(self, steps):
@@ -185,7 +179,7 @@ class SCUWrapper:
         """
 
         n_steps = int(steps - self._position)
-        bindings.MoveStep_S(self.device_index, self.channel_index, n_steps, self.amplitude*10, self.frequency)
+        bindings.MoveStep_S(self.device_index, self.channel_index, n_steps, self.amplitude * 10, self.frequency)
         self._position = steps
 
 

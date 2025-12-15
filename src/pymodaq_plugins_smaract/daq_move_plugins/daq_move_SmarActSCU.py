@@ -1,12 +1,10 @@
 
-from typing import Union, List, Dict
+from typing import Union
 
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun, DataActuatorType
-from pymodaq.utils.daq_utils import ThreadCommand
-from easydict import EasyDict as edict
 
-from pymodaq_plugins_smaract.hardware.smaract.scu.scu_wrapper import (get_devices, SCUType, SCUWrapper,
-                                                                      SCULinear, SCURotation)
+from pymodaq_plugins_smaract.hardware.scu.scu_wrapper import (get_devices, SCUType, SCUWrapper,
+                                                              SCULinear, SCURotation)
 
 from pymodaq.utils.data import DataActuator
 

@@ -7,7 +7,7 @@ from pymodaq_utils.logger import set_logger, get_module_name
 logger = set_logger(get_module_name(__file__))
 
 try:
-    from pymodaq_plugins_smaract.hardware.smaract.mcs1 import MCS1_bindings as bindings
+    from pymodaq_plugins_smaract.hardware.mcs1 import MCS1_bindings as bindings
 except Exception as e:
     bindings = None
     logger.warning(f'Could not load Smaract MCS1 bindings: {str(e)}')
