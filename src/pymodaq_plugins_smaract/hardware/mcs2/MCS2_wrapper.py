@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
-import os
-import re
 
 from typing import Optional
 
-import ctypes
 from pymodaq_utils.logger import set_logger, get_module_name
 
 logger = set_logger(get_module_name(__file__))
 
 try:
-    from pymodaq_plugins_smaract.hardware import MCS2_bindings as bindings
+    from pymodaq_plugins_smaract.hardware.mcs2 import MCS2_bindings as bindings
 except Exception as e:
     bindings = None
     logger.warning(f'Could not load Smaract MCS2 bindings: {str(e)}')
