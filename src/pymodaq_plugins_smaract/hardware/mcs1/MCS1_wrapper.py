@@ -17,8 +17,8 @@ except Exception as e:
 def get_controller_locators():
     """Get the locator (e.g. usb:id:3118167233) of the plugged MCS1 controller.
 
-    Caution: if several controllers are plugged, the code probably needs to be updated.
     The 10-digit number corresponds to the serial number printed on the controller.
+    We tested with up to 3 MCS1 controllers plugged.
 
     Returns
     -------
@@ -27,19 +27,19 @@ def get_controller_locators():
     if bindings is None:
         return []
 
-    outBuffer = ct.create_string_buffer(17)
-    ioBufferSize = ct.c_ulong(18)
+    outBuffer = ct.create_string_buffer(4096)
+    ioBufferSize = ct.c_ulong(4096)
     status = bindings.SA_FindSystems('', outBuffer, ioBufferSize)
 
     if status != 0:
         raise Exception('SmarAct SA_FindSystems error')
 
-    controller_locators = outBuffer[:18].decode("utf-8")
+    controller_locators = outBuffer.value.decode("utf-8").split()
 
     if not controller_locators:
         logger.warning('No SmarAct MCS controller found')
 
-    return [controller_locators]
+    return controller_locators
 
 
 class SmarActMCS1Wrapper(object):
