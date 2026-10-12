@@ -13,7 +13,10 @@ name = "pymodaq_plugins_smaract"
 description = 'Set of PyMoDAQ plugins for linear actuators from Smaract (SLC positioners). MCS and MCS2 controllers are supported.'
 
 dependencies = [
-    "pymodaq>5.0.0",
+    "pymodaq>=5.3.2",
+    "pymodaq_utils>=5.3.1",
+    "pymodaq_gui>=5.3.0",
+    "pymodaq_data>=5.3.0",
 ]
 
 authors = [
