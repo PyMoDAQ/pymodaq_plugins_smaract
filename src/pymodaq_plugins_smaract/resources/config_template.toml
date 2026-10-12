@@ -1,3 +1,6 @@
 title = 'this is the configuration file of the Smaract plugin'
 
+[SCU]
+[SCU.ascii]
+default_port = 'ASRL3::INSTR'
 
